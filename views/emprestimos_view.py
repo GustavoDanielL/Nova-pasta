@@ -181,11 +181,13 @@ class EmprestimosView(ctk.CTkFrame):
         ctk.CTkLabel(main_frame, text="⏱️ Prazo (meses):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
         ctk.CTkLabel(main_frame, text="Exemplo: 6, 12, 24", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
         entry_prazo = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Arial", 11), width=100)
-        entry_prazo.pack(anchor="w", padx=16, pady=(0,16))
+        entry_prazo.pack(anchor="w", padx=16, pady=(0,12))
 
-        # Separador
-        sep = ctk.CTkFrame(main_frame, fg_color=ACCENT, height=1)
-        sep.pack(fill="x", padx=16, pady=(0,12))
+        # Data de Vencimento (nova)
+        ctk.CTkLabel(main_frame, text="📅 Data de Vencimento (opcional):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
+        ctk.CTkLabel(main_frame, text="Deixe em branco para calcular automaticamente (prazo em meses)", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD (opcional)", height=36, font=("Arial", 11))
+        entry_data_venc.pack(fill="x", padx=16, pady=(0,16))
 
         # Seção 2: Preview de cálculos
         preview_titulo = ctk.CTkLabel(main_frame, text="📈 Preview do Empréstimo", font=("Arial", 14, "bold"), text_color=ACCENT)
@@ -274,8 +276,20 @@ class EmprestimosView(ctk.CTkFrame):
 
                 data_inicio = datetime.now().date().isoformat()
 
+                # Data de vencimento (opcional)
+                data_venc_str = entry_data_venc.get().strip()
+                if data_venc_str:
+                    try:
+                        datetime.strptime(data_venc_str, "%Y-%m-%d")
+                        data_vencimento = data_venc_str
+                    except:
+                        messagebox.showerror("Erro", "Data de vencimento inválida. Use formato YYYY-MM-DD.")
+                        return
+                else:
+                    data_vencimento = None  # Será calculado automaticamente no modelo
+
                 # Criar empréstimo
-                novo = Emprestimo(cliente_id=cliente_id, valor_emprestado=valor, taxa_juros=taxa, data_inicio=data_inicio, prazo_meses=prazo)
+                novo = Emprestimo(cliente_id=cliente_id, valor_emprestado=valor, taxa_juros=taxa, data_inicio=data_inicio, prazo_meses=prazo, data_vencimento=data_vencimento)
                 self.database.adicionar_emprestimo(novo)
                 self.database.salvar_dados()
                 messagebox.showinfo("Sucesso", f"✓ Empréstimo criado!\n\nValor total: {formatar_moeda(novo.valor_total)}\nParcela: {formatar_moeda(novo.valor_parcela)}")
@@ -459,7 +473,8 @@ class EmprestimosView(ctk.CTkFrame):
             f"Parcela: {formatar_moeda(emprestimo.valor_parcela)}\n"
             f"Saldo devedor: {formatar_moeda(emprestimo.saldo_devedor)}\n"
             f"Taxa (mensal): {emprestimo.taxa_juros * 100:.2f}%\n"
-            f"Criado em: {emprestimo.data_criacao[:10]}"
+            f"Criado em: {emprestimo.data_criacao[:10]}\n"
+            f"Vencimento: {emprestimo.data_vencimento if emprestimo.data_vencimento else 'Não especificado'}"
         )
         ctk.CTkLabel(frame, text=info_text, justify="left", anchor="w").pack(fill="x", padx=12, pady=(6,12))
 

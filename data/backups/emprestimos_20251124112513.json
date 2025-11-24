@@ -321,21 +321,5 @@
     "saldo_devedor": 1000.6001200079999,
     "total_juros": 0.6001200079998625,
     "pagamentos": []
-  },
-  {
-    "id": "EMP20251124112537",
-    "cliente_id": "CLI20251124112511",
-    "valor_emprestado": 333.0,
-    "taxa_juros": 0.0003,
-    "data_inicio": "2025-11-24",
-    "prazo_meses": 15,
-    "data_vencimento": "2027-02-17",
-    "data_criacao": "2025-11-24T11:25:37.351311",
-    "ativo": true,
-    "valor_total": 334.5016509445891,
-    "valor_parcela": 22.300110062972603,
-    "saldo_devedor": 334.5016509445891,
-    "total_juros": 1.5016509445890733,
-    "pagamentos": []
   }
 ]

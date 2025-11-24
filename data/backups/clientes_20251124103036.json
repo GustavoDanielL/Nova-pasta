@@ -64,27 +64,5 @@
     "chave_pix": "",
     "data_cadastro": "2025-11-17T21:14:02.178288",
     "ativo": true
-  },
-  {
-    "id": "CLI20251124103036",
-    "nome": "Junior",
-    "cpf_cnpj": "123",
-    "telefone": "1323",
-    "email": "jmourao333@gmail.com",
-    "endereco": "123",
-    "chave_pix": "",
-    "data_cadastro": "2025-11-24T10:30:36.768775",
-    "ativo": true
-  },
-  {
-    "id": "CLI20251124112511",
-    "nome": "gustav",
-    "cpf_cnpj": "123",
-    "telefone": "123",
-    "email": "gugadaniel2009@gmail.com",
-    "endereco": "",
-    "chave_pix": "",
-    "data_cadastro": "2025-11-24T11:25:11.125141",
-    "ativo": true
   }
 ]

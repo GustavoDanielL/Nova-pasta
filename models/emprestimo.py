@@ -2,19 +2,30 @@ from datetime import datetime, timedelta
 from utils.calculos import calcular_juros_compostos
 
 class Emprestimo:
-    def __init__(self, cliente_id, valor_emprestado, taxa_juros, data_inicio, prazo_meses, id=None):
+    def __init__(self, cliente_id, valor_emprestado, taxa_juros, data_inicio, prazo_meses, id=None, data_vencimento=None):
         self.id = id or self.gerar_id()
         self.cliente_id = cliente_id
         self.valor_emprestado = float(valor_emprestado)
         self.taxa_juros = float(taxa_juros) / 100  # Convertendo para decimal
         self.data_inicio = data_inicio
         self.prazo_meses = int(prazo_meses)
+        self.data_vencimento = data_vencimento or self._calcular_data_vencimento()
         self.data_criacao = datetime.now().isoformat()
         self.ativo = True
         self.pagamentos = []
         
         # Calcular valores iniciais
         self.calcular_valores()
+    
+    def _calcular_data_vencimento(self):
+        """Calcula automaticamente a data de vencimento baseado na data de início e prazo."""
+        try:
+            data_inicio_obj = datetime.fromisoformat(self.data_inicio)
+            dias_total = self.prazo_meses * 30  # Aproximado: 30 dias por mês
+            data_venc = data_inicio_obj + timedelta(days=dias_total)
+            return data_venc.date().isoformat()
+        except:
+            return None
         
     def gerar_id(self):
         return f"EMP{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -76,6 +87,7 @@ class Emprestimo:
             'taxa_juros': self.taxa_juros,
             'data_inicio': self.data_inicio,
             'prazo_meses': self.prazo_meses,
+            'data_vencimento': self.data_vencimento,
             'data_criacao': self.data_criacao,
             'ativo': self.ativo,
             'valor_total': self.valor_total,
@@ -93,7 +105,8 @@ class Emprestimo:
             taxa_juros=data['taxa_juros'] * 100,  # Convertendo para percentual
             data_inicio=data['data_inicio'],
             prazo_meses=data['prazo_meses'],
-            id=data['id']
+            id=data['id'],
+            data_vencimento=data.get('data_vencimento')
         )
         
         emprestimo.data_criacao = data['data_criacao']

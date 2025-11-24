@@ -547,6 +547,23 @@ class ClientesView(ctk.CTkFrame):
             """Tenta enviar o e-mail usando configuração SMTP em `data/smtp_config.json`.
             Se não existir, informa e oferece abrir mailto como fallback.
             """
+            email = (cliente.email or '').strip()
+            if not email:
+                messagebox.showerror("Erro", "Cliente não possui e-mail cadastrado.")
+                return
+
+            pix_code = entry_pix.get().strip()
+            msg_completa = text_msg.get("1.0", "end").strip()
+            
+            # PIX é opcional - não validar
+            if pix_code:
+                msg_completa = msg_completa.replace("[CÓDIGO PIX SERÁ INSERIDO AQUI]", pix_code)
+            else:
+                # Se não houver PIX, remover a linha do placeholder
+                msg_completa = msg_completa.replace("[CÓDIGO PIX SERÁ INSERIDO AQUI]\n", "")
+
+            assunto = f"Cobrança FinancePro - {formatar_moeda(total_devido)}"
+            
             smtp_file = Path("data/smtp_config.json")
             if not smtp_file.exists():
                 if messagebox.askyesno("SMTP não configurado", "Configuração SMTP não encontrada. Deseja abrir o email padrão (mailto)?"):
@@ -625,3 +642,7 @@ class ClientesView(ctk.CTkFrame):
         ctk.CTkButton(btn_frame, text="📤 Enviar via SMTP", height=40, font=("Arial", 12, "bold"), 
                  fg_color=("#1abc9c","#16a085"), command=enviar_via_smtp).pack(side="left", padx=6)
         ctk.CTkButton(btn_frame, text="✕ Cancelar", height=36, command=janela.destroy).pack(side="left", padx=6)
+        
+        # Nota sobre PIX opcional
+        ctk.CTkLabel(main_frame, text="🔗 Dica: O código PIX é opcional. Você pode enviar a cobrança sem PIX se desejar.", 
+                     font=("Arial", 9), text_color=("#999", "#aaa")).pack(anchor="w", padx=16, pady=(0,8))
