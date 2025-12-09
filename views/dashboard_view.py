@@ -1,11 +1,15 @@
 import customtkinter as ctk
 from datetime import datetime, timedelta
 from utils.calculos import formatar_moeda
+from pathlib import Path
+from config import *
+
+# Configurar matplotlib para usar backend seguro ANTES de importar pyplot
+import matplotlib
+matplotlib.use('Agg')  # Backend sem GUI - mais seguro
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from pathlib import Path
-from config import *
 
 # Colors
 CARD_BG = ("#ffffff", "#0b1220")
