@@ -42,21 +42,64 @@ class App:
             print(f"Erro ao fechar: {e}")
             self.root.destroy()
         
+    def mostrar_loading(self):
+        """Mostra indicator de loading no canto"""
+        self.loading_label = ctk.CTkLabel(
+            self.root, 
+            text="⏳ Carregando...",
+            font=("Segoe UI", 11),
+            text_color="#2563eb",
+            fg_color="#e0f2fe",
+            corner_radius=8,
+            width=140,
+            height=35
+        )
+        self.loading_label.place(relx=0.98, rely=0.02, anchor="ne")
+    
+    def esconder_loading(self):
+        """Esconde loading e mostra notificação de sucesso"""
+        if hasattr(self, 'loading_label'):
+            self.loading_label.place_forget()
+        
+        # Mostrar notificação de sucesso
+        success_label = ctk.CTkLabel(
+            self.root,
+            text="✅ Pronto!",
+            font=("Segoe UI", 11, "bold"),
+            text_color="#10b981",
+            fg_color="#d1fae5",
+            corner_radius=8,
+            width=120,
+            height=35
+        )
+        success_label.place(relx=0.98, rely=0.02, anchor="ne")
+        
+        # Remover após 2 segundos
+        self.root.after(2000, success_label.place_forget)
+    
     def iniciar_sistema(self):
         try:
             self.login_view.destroy()
-            from views.main_view import MainView
-            self.main_view = MainView(self.root, self.db)
-            # Iniciar notifier em background (DESATIVADO POR SEGURANÇA)
-            # Remova o comentário abaixo se quiser reativar
-            # try:
-            #     from utils.notifier import Notifier
-            #     self._notifier = Notifier(self.db)
-            #     self._notifier.start()
-            # except Exception as e:
-            #     print(f"Notifier desativado: {e}")
-            #     self._notifier = None
-            self._notifier = None
+            
+            # Mostrar loading
+            self.mostrar_loading()
+            
+            # Carregar MainView em background
+            def carregar_views():
+                from views.main_view import MainView
+                self.main_view = MainView(self.root, self.db)
+                
+                # Pré-carregar e cachear as views principais
+                self.root.after(50, lambda: self.main_view.pre_carregar_views())
+                
+                # Esconder loading após tudo carregar
+                self.root.after(100, self.esconder_loading)
+                
+                self._notifier = None
+            
+            # Executar carregamento após pequeno delay
+            self.root.after(50, carregar_views)
+            
         except Exception as e:
             print(f"Erro ao iniciar sistema: {e}")
             raise

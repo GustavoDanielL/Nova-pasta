@@ -18,13 +18,12 @@ ACCENT = "#1abc9c"
 
 class ClientesView(ctk.CTkFrame):
     def __init__(self, parent, database):
-        print("[DEBUG] ClientesView: Inicializando")
         super().__init__(parent)
         self.database = database
         self.pack(fill="both", expand=True)
         self.criar_widgets()
-        self.atualizar_lista()
-        print("[DEBUG] ClientesView: Inicializado com sucesso")
+        # Carregar lista após um pequeno delay para não travar UI
+        self.after(100, self.atualizar_lista)
     
     def criar_widgets(self):
         # Frame superior (busca e botões)
@@ -130,25 +129,25 @@ class ClientesView(ctk.CTkFrame):
             label.grid(row=0, column=i+1, padx=8, pady=8, sticky="w")
             frame.grid_columnconfigure(i+1, weight=1)
         
-        # Botões de ação
+        # Botões de ação - OTIMIZADO com botões menores
         btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
         btn_frame.grid(row=0, column=6, padx=5, pady=5)
         
-        # Botão Info
-        btn_info = ctk.CTkButton(btn_frame, text="👁️ Info", width=70, height=32, corner_radius=8, 
-                                font=FONT_SMALL,
+        # Botão compacto com menu
+        btn_info = ctk.CTkButton(btn_frame, text="👁️", width=35, height=28, corner_radius=6, 
+                                font=("Segoe UI", 11),
                                 fg_color=COLOR_BTN_INFO, hover_color=COLOR_BTN_INFO_HOVER,
                                 command=lambda: self.mostrar_info_cliente(cliente))
         btn_info.pack(side="left", padx=2)
         
-        btn_editar = ctk.CTkButton(btn_frame, text="✏️ Editar", width=80, height=32, corner_radius=8,
-                                  font=FONT_SMALL,
+        btn_editar = ctk.CTkButton(btn_frame, text="✏️", width=35, height=28, corner_radius=6,
+                                  font=("Segoe UI", 11),
                                   fg_color=COLOR_BTN_PRIMARY, hover_color=COLOR_BTN_PRIMARY_HOVER,
                      command=lambda: self.editar_cliente(cliente))
         btn_editar.pack(side="left", padx=2)
         
-        btn_excluir = ctk.CTkButton(btn_frame, text="🗑️ Excluir", width=85, height=32, corner_radius=8,
-                                   font=FONT_SMALL,
+        btn_excluir = ctk.CTkButton(btn_frame, text="🗑️", width=35, height=28, corner_radius=6,
+                                   font=("Segoe UI", 11),
                                    fg_color=COLOR_BTN_DANGER, hover_color=COLOR_BTN_DANGER_HOVER,
                                    command=lambda: self.excluir_cliente(cliente))
         btn_excluir.pack(side="left", padx=2)

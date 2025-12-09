@@ -1,0 +1,32 @@
+[
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251117200455 de Cliente Teste está em atraso. Saldo: R$ 803.00",
+    "data": "2025-11-17",
+    "emp_id": "EMP20251117200455"
+  },
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251117165431 de João está em atraso. Saldo: R$ 150.45",
+    "data": "2025-12-09",
+    "emp_id": "EMP20251117165431"
+  },
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251124103108 de Junior está em atraso. Saldo: R$ 1518.10",
+    "data": "2025-12-09",
+    "emp_id": "EMP20251124103108"
+  },
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251124103450 de João está em atraso. Saldo: R$ 1000.60",
+    "data": "2025-12-09",
+    "emp_id": "EMP20251124103450"
+  },
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251124112537 de gustav está em atraso. Saldo: R$ 334.50",
+    "data": "2025-12-09",
+    "emp_id": "EMP20251124112537"
+  }
+]

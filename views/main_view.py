@@ -116,3 +116,50 @@ class MainView:
             del self.view_cache['configuracoes']
         from views.settings_view import SettingsView
         SettingsView(self.main_frame, self.database)
+    
+    def pre_carregar_views(self):
+        """Pré-carrega as views principais em background para melhor performance"""
+        print("[CACHE] Pré-carregando views...")
+        
+        # Já temos dashboard carregado no __init__, agora carregar as outras
+        def carregar_clientes():
+            if 'clientes' not in self.view_cache:
+                try:
+                    module = __import__('views.clientes_view', fromlist=['ClientesView'])
+                    view_cls = getattr(module, 'ClientesView')
+                    view = view_cls(self.main_frame, self.database)
+                    view.pack_forget()  # Esconder por enquanto
+                    self.view_cache['clientes'] = view
+                    print("[CACHE] ClientesView carregada")
+                except Exception as e:
+                    print(f"[CACHE] Erro ao carregar ClientesView: {e}")
+        
+        def carregar_emprestimos():
+            if 'emprestimos' not in self.view_cache:
+                try:
+                    module = __import__('views.emprestimos_view', fromlist=['EmprestimosView'])
+                    view_cls = getattr(module, 'EmprestimosView')
+                    view = view_cls(self.main_frame, self.database)
+                    view.pack_forget()  # Esconder por enquanto
+                    self.view_cache['emprestimos'] = view
+                    print("[CACHE] EmprestimosView carregada")
+                except Exception as e:
+                    print(f"[CACHE] Erro ao carregar EmprestimosView: {e}")
+        
+        def carregar_notificacoes():
+            if 'notificacoes' not in self.view_cache:
+                try:
+                    module = __import__('views.notificacoes_view', fromlist=['NotificacoesView'])
+                    view_cls = getattr(module, 'NotificacoesView')
+                    view = view_cls(self.main_frame, self.database)
+                    view.pack_forget()  # Esconder por enquanto
+                    self.view_cache['notificacoes'] = view
+                    print("[CACHE] NotificacoesView carregada")
+                except Exception as e:
+                    print(f"[CACHE] Erro ao carregar NotificacoesView: {e}")
+        
+        # Carregar com delays pequenos para não travar UI
+        self.root.after(100, carregar_clientes)
+        self.root.after(200, carregar_emprestimos)
+        self.root.after(300, carregar_notificacoes)
+        self.root.after(400, lambda: print("[CACHE] Todas as views pré-carregadas!"))
