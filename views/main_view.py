@@ -1,8 +1,4 @@
 import customtkinter as ctk
-from views.clientes_view import ClientesView
-from views.emprestimos_view import EmprestimosView
-from views.dashboard_view import DashboardView
-from views.notificacoes_view import NotificacoesView
 
 # Modern palette: light / dark tuples
 SIDEBAR_BG = ("#f4f7fb", "#0f1724")
@@ -67,18 +63,22 @@ class MainView:
     
     def mostrar_dashboard(self):
         self.limpar_main_frame()
+        from views.dashboard_view import DashboardView
         DashboardView(self.main_frame, self.database)
     
     def mostrar_clientes(self):
         self.limpar_main_frame()
+        from views.clientes_view import ClientesView
         ClientesView(self.main_frame, self.database)
     
     def mostrar_emprestimos(self):
         self.limpar_main_frame()
+        from views.emprestimos_view import EmprestimosView
         EmprestimosView(self.main_frame, self.database)
     
     def mostrar_notificacoes(self):
         self.limpar_main_frame()
+        from views.notificacoes_view import NotificacoesView
         NotificacoesView(self.main_frame, self.database)
 
     def mostrar_exportacao(self):

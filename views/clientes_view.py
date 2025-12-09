@@ -9,6 +9,7 @@ import webbrowser
 import urllib.parse
 from utils.calculos import formatar_moeda
 from models.cliente import Cliente
+from config import *
 
 # Theme
 CARD_BG = ("#ffffff", "#0b1220")
@@ -34,7 +35,9 @@ class ClientesView(ctk.CTkFrame):
         self.entry_busca.bind("<KeyRelease>", self.buscar_cliente)
         
         # Botão novo cliente
-        btn_novo = ctk.CTkButton(top_frame, text="+ Novo Cliente", command=self.criar_cliente, fg_color=ACCENT)
+        btn_novo = ctk.CTkButton(top_frame, text="+ Novo Cliente", command=self.criar_cliente, 
+                                font=FONT_BUTTON, height=36, corner_radius=8,
+                                fg_color=COLOR_BTN_SUCCESS, hover_color=COLOR_BTN_SUCCESS_HOVER)
         btn_novo.pack(side="right", padx=5)
         
         # Frame principal
@@ -61,19 +64,38 @@ class ClientesView(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(self.lista_frame, fg_color="transparent")
         header_frame.pack(fill="x", pady=6, padx=6)
         
-        headers = ["Nome", "CPF/CNPJ", "Telefone", "E-mail", "Ações"]
+        headers = ["", "Nome", "CPF/CNPJ", "Telefone", "E-mail", "Ações"]
         for i, header in enumerate(headers):
             label = ctk.CTkLabel(header_frame, text=header, font=("Arial", 12, "bold"))
             label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
-            header_frame.grid_columnconfigure(i, weight=1)
+            if i > 0:
+                header_frame.grid_columnconfigure(i, weight=1)
         
         # Lista de clientes
         for cliente in clientes:
             self.adicionar_cliente_na_lista(cliente)
     
     def adicionar_cliente_na_lista(self, cliente):
+        # Calcular status do cliente
+        emprestimos_cliente = [e for e in self.database.emprestimos if e.cliente_id == cliente.id]
+        emprestimos_ativos = [e for e in emprestimos_cliente if e.ativo and e.saldo_devedor > 0]
+        
+        if not emprestimos_cliente:
+            badge = "⚪"
+            badge_color = "#9ca3af"
+        elif emprestimos_ativos:
+            badge = "🔴"
+            badge_color = "#ef4444"
+        else:
+            badge = "✅"
+            badge_color = "#10b981"
+        
         frame = ctk.CTkFrame(self.lista_frame, corner_radius=8, fg_color=("#f7f9fb", "#071018"))
         frame.pack(fill="x", pady=6, padx=6)
+        
+        # Badge de status
+        label_badge = ctk.CTkLabel(frame, text=badge, font=("Arial", 14))
+        label_badge.grid(row=0, column=0, padx=(8, 2), pady=5)
         
         # Dados do cliente
         dados = [
@@ -85,33 +107,41 @@ class ClientesView(ctk.CTkFrame):
         
         for i, dado in enumerate(dados):
             label = ctk.CTkLabel(frame, text=dado)
-            label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
-            frame.grid_columnconfigure(i, weight=1)
+            label.grid(row=0, column=i+1, padx=5, pady=5, sticky="w")
+            frame.grid_columnconfigure(i+1, weight=1)
         
         # Botões de ação
         btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        btn_frame.grid(row=0, column=4, padx=5, pady=5)
+        btn_frame.grid(row=0, column=5, padx=5, pady=5)
         
         # Botão Info
-        btn_info = ctk.CTkButton(btn_frame, text="👁️ Info", width=60, corner_radius=8, fg_color=("#3498db","#2980b9"),
-                     command=lambda: self.mostrar_info_cliente(cliente))
+        btn_info = ctk.CTkButton(btn_frame, text="👁️ Info", width=70, height=32, corner_radius=8, 
+                                font=FONT_SMALL,
+                                fg_color=COLOR_BTN_INFO, hover_color=COLOR_BTN_INFO_HOVER,
+                                command=lambda: self.mostrar_info_cliente(cliente))
         btn_info.pack(side="left", padx=2)
         
-        btn_editar = ctk.CTkButton(btn_frame, text="Editar", width=70, corner_radius=8,
+        btn_editar = ctk.CTkButton(btn_frame, text="✏️ Editar", width=80, height=32, corner_radius=8,
+                                  font=FONT_SMALL,
+                                  fg_color=COLOR_BTN_PRIMARY, hover_color=COLOR_BTN_PRIMARY_HOVER,
                      command=lambda: self.editar_cliente(cliente))
         btn_editar.pack(side="left", padx=2)
         
-        btn_excluir = ctk.CTkButton(btn_frame, text="Excluir", width=70, corner_radius=8, fg_color=("#ff6b6b","#8b2a2a"),
-                      command=lambda: self.excluir_cliente(cliente))
+        btn_excluir = ctk.CTkButton(btn_frame, text="🗑️ Excluir", width=85, height=32, corner_radius=8,
+                                   font=FONT_SMALL,
+                                   fg_color=COLOR_BTN_DANGER, hover_color=COLOR_BTN_DANGER_HOVER,
+                                   command=lambda: self.excluir_cliente(cliente))
         btn_excluir.pack(side="left", padx=2)
         
         # Botão enviar cobrança (abre o cliente de e-mail com mensagem)
         def enviar_cobranca_action():
             self.enviar_cobranca(cliente)
 
-        btn_cobrar = ctk.CTkButton(btn_frame, text="Enviar cobrança", width=120, corner_radius=8, fg_color=("#f39c12","#b36b06"),
-                                   command=enviar_cobranca_action)
-        btn_cobrar.pack(side="left", padx=6)
+        btn_cobrar = ctk.CTkButton(btn_frame, text="📧 Cobrança", width=105, height=32, corner_radius=8,
+                                  font=FONT_SMALL,
+                                  fg_color=COLOR_BTN_WARNING, hover_color=COLOR_BTN_WARNING_HOVER,
+                                  command=enviar_cobranca_action)
+        btn_cobrar.pack(side="left", padx=2)
     
     def buscar_cliente(self, event=None):
         termo = self.entry_busca.get().strip()
@@ -131,11 +161,18 @@ class ClientesView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title("Novo Cliente" if not cliente else "Editar Cliente")
         janela.geometry("650x550")
+        janela.configure(fg_color=COLOR_BG_LIGHT)
         janela.transient(self)
-        janela.grab_set()
+        # Wait for window to be visible before grabbing (fix for Linux)
+        janela.update_idletasks()
+        try:
+            janela.grab_set()
+        except Exception:
+            pass  # Ignore grab errors on some Linux systems
         
         # Formulário
-        form_frame = ctk.CTkFrame(janela)
+        form_frame = ctk.CTkFrame(janela, fg_color=FRAME_BG, corner_radius=12,
+                                 border_width=1, border_color=FRAME_BORDER)
         form_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
         campos = [
@@ -220,88 +257,169 @@ class ClientesView(ctk.CTkFrame):
             messagebox.showinfo("Sucesso", "Cliente excluído com sucesso!")
 
     def mostrar_info_cliente(self, cliente):
-        """Abre uma janela mostrando detalhes do cliente, débitos e histórico de pagamentos."""
+        """Abre uma janela mostrando detalhes do cliente, débitos e histórico de empréstimos."""
         janela = ctk.CTkToplevel(self)
         janela.title(f"Informações - {cliente.nome}")
-        janela.geometry("800x700")
+        janela.geometry("900x750")
         janela.transient(self)
-        janela.grab_set()
+        janela.configure(fg_color=COLOR_BG_LIGHT)
+        janela.update_idletasks()
+        try:
+            janela.grab_set()
+        except Exception:
+            pass
 
         # Frame principal
-        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=("#0b1220", "#0b1220"))
-        main_frame.pack(fill="both", expand=True, padx=12, pady=12)
+        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=FRAME_BG, 
+                                 border_width=1, border_color=FRAME_BORDER)
+        main_frame.pack(fill="both", expand=True, padx=16, pady=16)
 
         # Cabeçalho com dados do cliente
-        header_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        header_frame = ctk.CTkFrame(main_frame, fg_color=COLOR_BG_LIGHT, corner_radius=8)
         header_frame.pack(fill="x", padx=16, pady=16)
 
-        ctk.CTkLabel(header_frame, text=f"👤 {cliente.nome}", font=("Arial", 14, "bold")).pack(anchor="w", pady=(0,6))
-        ctk.CTkLabel(header_frame, text=f"CPF/CNPJ: {cliente.cpf_cnpj} | Telefone: {cliente.telefone}", font=("Arial", 10)).pack(anchor="w", pady=(0,4))
-        ctk.CTkLabel(header_frame, text=f"Email: {cliente.email}", font=("Arial", 10)).pack(anchor="w", pady=(0,4))
-        ctk.CTkLabel(header_frame, text=f"Endereço: {cliente.endereco}", font=("Arial", 10)).pack(anchor="w")
+        ctk.CTkLabel(header_frame, text=f"👤 {cliente.nome}", 
+                    font=FONT_HEADING, text_color=COLOR_TEXT_PRIMARY).pack(anchor="w", padx=12, pady=(12,6))
+        ctk.CTkLabel(header_frame, text=f"CPF/CNPJ: {cliente.cpf_cnpj} | Telefone: {cliente.telefone}", 
+                    font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY).pack(anchor="w", padx=12, pady=(0,4))
+        ctk.CTkLabel(header_frame, text=f"Email: {cliente.email}", 
+                    font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY).pack(anchor="w", padx=12, pady=(0,4))
+        ctk.CTkLabel(header_frame, text=f"Endereço: {cliente.endereco}", 
+                    font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY).pack(anchor="w", padx=12, pady=(0,12))
 
-        # Seção de débitos
-        debito_label = ctk.CTkLabel(main_frame, text="💰 Débitos Ativos", font=("Arial", 12, "bold"))
-        debito_label.pack(anchor="w", padx=16, pady=(12,8))
+        # Resumo financeiro em cards
+        resumo_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        resumo_frame.pack(fill="x", padx=16, pady=(0, 16))
 
-        debito_frame = ctk.CTkFrame(main_frame, corner_radius=8, fg_color=("#f9f9f9", "#0a1419"), border_width=1, border_color="#1abc9c")
-        debito_frame.pack(fill="both", padx=16, pady=(0,12))
-
-        # Calcular débitos
-        emprestimos_ativos = [e for e in self.database.emprestimos if e.cliente_id == cliente.id and e.ativo]
+        # Calcular totais
+        emprestimos_cliente = [e for e in self.database.emprestimos if e.cliente_id == cliente.id]
+        emprestimos_ativos = [e for e in emprestimos_cliente if e.ativo]
+        emprestimos_quitados = [e for e in emprestimos_cliente if not e.ativo]
+        
+        total_emprestado = sum(getattr(e, 'valor_emprestado', 0.0) for e in emprestimos_cliente)
         total_devido = sum(getattr(e, 'saldo_devedor', 0.0) for e in emprestimos_ativos)
+        total_pago = sum(
+            sum(float(p.get('valor', 0.0)) for p in getattr(e, 'pagamentos', []))
+            for e in emprestimos_cliente
+        )
 
-        if not emprestimos_ativos:
-            ctk.CTkLabel(debito_frame, text="✓ Nenhum débito ativo", font=("Arial", 11)).pack(anchor="w", padx=12, pady=12)
-        else:
-            for emp in emprestimos_ativos:
-                texto = (f"ID: {emp.id}\n"
-                        f"Valor emprestado: {formatar_moeda(emp.valor_emprestado)} | "
-                        f"Saldo devedor: {formatar_moeda(emp.saldo_devedor)}\n"
-                        f"Valor total: {formatar_moeda(emp.valor_total)} | "
-                        f"Taxa: {emp.taxa_juros * 100:.2f}%")
-                ctk.CTkLabel(debito_frame, text=texto, font=("Arial", 10), justify="left").pack(anchor="w", padx=12, pady=8)
+        # Cards de resumo
+        def criar_card_resumo(parent, titulo, valor, cor):
+            card = ctk.CTkFrame(parent, corner_radius=8, fg_color=FRAME_BG, 
+                               border_width=2, border_color=cor)
+            card.pack(side="left", fill="both", expand=True, padx=6)
+            ctk.CTkLabel(card, text=titulo, font=FONT_SMALL, 
+                        text_color=COLOR_TEXT_SECONDARY).pack(pady=(12,4))
+            ctk.CTkLabel(card, text=valor, font=FONT_HEADING, 
+                        text_color=cor).pack(pady=(0,12))
 
-            ctk.CTkLabel(debito_frame, text=f"TOTAL DEVIDO: {formatar_moeda(total_devido)}", 
-                        font=("Arial", 12, "bold"), text_color=("#ff6b6b", "#ff9999")).pack(anchor="w", padx=12, pady=(8,12))
+        criar_card_resumo(resumo_frame, "Total Emprestado", formatar_moeda(total_emprestado), COLOR_BTN_INFO)
+        criar_card_resumo(resumo_frame, "Total Devendo", formatar_moeda(total_devido), COLOR_BTN_DANGER)
+        criar_card_resumo(resumo_frame, "Total Pago", formatar_moeda(total_pago), COLOR_BTN_SUCCESS)
 
-        # Seção de histórico de pagamentos
-        hist_label = ctk.CTkLabel(main_frame, text="📋 Histórico de Pagamentos", font=("Arial", 12, "bold"))
+        # Seção de empréstimos
+        hist_label = ctk.CTkLabel(main_frame, text="📋 Empréstimos", font=FONT_HEADING, 
+                                 text_color=COLOR_TEXT_PRIMARY)
         hist_label.pack(anchor="w", padx=16, pady=(12,8))
 
-        hist_frame = ctk.CTkFrame(main_frame, corner_radius=8, fg_color=("#f9f9f9", "#0a1419"), border_width=1, border_color="#1abc9c")
+        hist_frame = ctk.CTkFrame(main_frame, corner_radius=8, fg_color=FRAME_BG, 
+                                 border_width=1, border_color=FRAME_BORDER)
         hist_frame.pack(fill="both", expand=True, padx=16, pady=(0,12))
 
-        # Listar histórico de pagamentos
-        all_pagamentos = []
-        for emp in self.database.emprestimos:
-            if emp.cliente_id == cliente.id:
-                for pag in getattr(emp, 'pagamentos', []):
-                    all_pagamentos.append({
-                        'emp_id': emp.id,
-                        'valor': pag.get('valor', 0.0),
-                        'data': pag.get('data', ''),
-                        'tipo': pag.get('tipo', 'Pagamento')
-                    })
-
-        if not all_pagamentos:
-            ctk.CTkLabel(hist_frame, text="Nenhum pagamento registrado", font=("Arial", 11)).pack(anchor="center", pady=12)
+        if not emprestimos_cliente:
+            ctk.CTkLabel(hist_frame, text="Nenhum empréstimo registrado", 
+                        font=FONT_NORMAL, text_color=COLOR_TEXT_SECONDARY).pack(anchor="center", pady=40)
         else:
-            # Criar scrollable frame para pagamentos
+            # Criar scrollable frame para empréstimos
             scroll_frame = ctk.CTkScrollableFrame(hist_frame, fg_color="transparent")
-            scroll_frame.pack(fill="both", expand=True, padx=8, pady=8)
+            scroll_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
-            # Ordenar por data descrescente
-            all_pagamentos.sort(key=lambda x: x['data'], reverse=True)
+            # Exibir empréstimos ativos primeiro
+            if emprestimos_ativos:
+                ctk.CTkLabel(scroll_frame, text="🔴 Empréstimos Ativos", 
+                            font=FONT_NORMAL, text_color=COLOR_DANGER).pack(anchor="w", pady=(4, 8))
+                
+                for emp in emprestimos_ativos:
+                    emp_frame = ctk.CTkFrame(scroll_frame, corner_radius=8, 
+                                            fg_color="#fff5f5",
+                                            border_width=1, border_color=COLOR_DANGER)
+                    emp_frame.pack(fill="x", pady=6)
+                    
+                    # Hover effect
+                    def on_enter(e, frame=emp_frame):
+                        frame.configure(border_width=2)
+                    def on_leave(e, frame=emp_frame):
+                        frame.configure(border_width=1)
+                    
+                    emp_frame.bind("<Enter>", on_enter)
+                    emp_frame.bind("<Leave>", on_leave)
+                    
+                    content = ctk.CTkFrame(emp_frame, fg_color="transparent")
+                    content.pack(fill="x", padx=12, pady=12)
+                    
+                    # Info principal
+                    ctk.CTkLabel(content, text=f"📄 Empréstimo #{emp.id}", 
+                                font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY, 
+                                anchor="w").pack(anchor="w")
+                    
+                    # Valores
+                    valores_text = (f"Emprestado: {formatar_moeda(emp.valor_emprestado)} | "
+                                  f"Total c/ Juros: {formatar_moeda(emp.valor_total)} | "
+                                  f"Taxa: {emp.taxa_juros * 100:.1f}%")
+                    ctk.CTkLabel(content, text=valores_text, font=FONT_SMALL, 
+                                text_color=COLOR_TEXT_SECONDARY, anchor="w").pack(anchor="w", pady=(4,0))
+                    
+                    # Saldo devedor e pagamentos
+                    pagamentos_realizados = len(getattr(emp, 'pagamentos', []))
+                    total_pago_emp = sum(float(p.get('valor', 0.0)) for p in getattr(emp, 'pagamentos', []))
+                    
+                    status_text = (f"💰 Devendo: {formatar_moeda(emp.saldo_devedor)} | "
+                                 f"✅ Pago: {formatar_moeda(total_pago_emp)} | "
+                                 f"📊 Parcelas pagas: {pagamentos_realizados}")
+                    ctk.CTkLabel(content, text=status_text, font=FONT_SMALL, 
+                                text_color=COLOR_TEXT_PRIMARY, anchor="w").pack(anchor="w", pady=(4,0))
 
-            for pag in all_pagamentos:
-                texto = f"• {pag['data'][:10]} - {formatar_moeda(pag['valor'])} ({pag['tipo']})"
-                ctk.CTkLabel(scroll_frame, text=texto, font=("Arial", 10)).pack(anchor="w", pady=4)
+            # Exibir empréstimos quitados
+            if emprestimos_quitados:
+                ctk.CTkLabel(scroll_frame, text="✅ Empréstimos Quitados", 
+                            font=FONT_NORMAL, text_color=COLOR_SUCCESS).pack(anchor="w", pady=(16, 8))
+                
+                for emp in emprestimos_quitados:
+                    emp_frame = ctk.CTkFrame(scroll_frame, corner_radius=8, 
+                                            fg_color="#f0fdf4",
+                                            border_width=1, border_color=COLOR_SUCCESS)
+                    emp_frame.pack(fill="x", pady=6)
+                    
+                    # Hover effect
+                    def on_enter_q(e, frame=emp_frame):
+                        frame.configure(border_width=2)
+                    def on_leave_q(e, frame=emp_frame):
+                        frame.configure(border_width=1)
+                    
+                    emp_frame.bind("<Enter>", on_enter_q)
+                    emp_frame.bind("<Leave>", on_leave_q)
+                    
+                    content = ctk.CTkFrame(emp_frame, fg_color="transparent")
+                    content.pack(fill="x", padx=12, pady=12)
+                    
+                    ctk.CTkLabel(content, text=f"📄 Empréstimo #{emp.id} - QUITADO", 
+                                font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY, 
+                                anchor="w").pack(anchor="w")
+                    
+                    pagamentos_realizados = len(getattr(emp, 'pagamentos', []))
+                    info_text = (f"Valor original: {formatar_moeda(emp.valor_emprestado)} | "
+                               f"Total pago: {formatar_moeda(emp.valor_total)} | "
+                               f"Parcelas: {pagamentos_realizados}")
+                    ctk.CTkLabel(content, text=info_text, font=FONT_SMALL, 
+                                text_color=COLOR_TEXT_SECONDARY, anchor="w").pack(anchor="w", pady=(4,0))
 
         # Botão fechar
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=12)
-        ctk.CTkButton(btn_frame, text="✕ Fechar", height=36, command=janela.destroy).pack(side="left", padx=6)
+        ctk.CTkButton(btn_frame, text="✕ Fechar", height=40, width=120,
+                     font=FONT_BUTTON, corner_radius=8,
+                     fg_color=COLOR_BTN_SECONDARY, hover_color=COLOR_BTN_SECONDARY_HOVER,
+                     command=janela.destroy).pack(pady=8)
 
     def enviar_cobranca(self, cliente):
         """Abre uma janela com PIX + Email para enviar cobrança ao cliente."""
@@ -324,11 +442,17 @@ class ClientesView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title(f"Cobrança - {cliente.nome}")
         janela.geometry("750x650")
+        janela.configure(fg_color=COLOR_BG_LIGHT)
         janela.transient(self)
-        janela.grab_set()
+        janela.update_idletasks()
+        try:
+            janela.grab_set()
+        except Exception:
+            pass
 
         # Frame principal
-        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=("#0b1220", "#0b1220"))
+        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=FRAME_BG,
+                                 border_width=1, border_color=FRAME_BORDER)
         main_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
         # Informações do cliente e valor

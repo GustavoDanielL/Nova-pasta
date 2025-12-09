@@ -1,92 +1,177 @@
 import customtkinter as ctk
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.calculos import formatar_moeda
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from pathlib import Path
+from config import *
 
 # Colors
 CARD_BG = ("#ffffff", "#0b1220")
-ACCENT = "#1abc9c"
-CHART_COLORS = ["#1abc9c", "#e74c3c", "#f39c12", "#27ae60", "#3498db", "#9b59b6"]
+ACCENT = "#3b82f6"
+CHART_COLORS = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899"]
 
 class DashboardView(ctk.CTkFrame):
     def __init__(self, parent, database):
         super().__init__(parent, fg_color="transparent")
         self.database = database
-        self.current_chart = "pizza_status"  # Default chart type
+        self.current_chart = "pizza_status"
         self.fig = None
         self.canvas_widget = None
+        self.chart_buttons = {}
+        self.filtro_periodo = "todos"  # todos, mes, semana
+        self.filtro_cliente = None
         self.pack(fill="both", expand=True)
         self.criar_widgets()
 
     def criar_widgets(self):
-        # Title
-        title = ctk.CTkLabel(self, text="Dashboard", font=("Arial", 24, "bold"), text_color=ACCENT)
-        title.pack(pady=(16,12), anchor="w", padx=20)
+        # Header com título e filtros
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.pack(pady=(16,12), padx=20, fill="x")
+        
+        title = ctk.CTkLabel(header_frame, text="📊 Dashboard", font=FONT_TITLE, text_color=COLOR_TEXT_PRIMARY)
+        title.pack(side="left")
+        
+        # Filtros
+        filtros_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        filtros_frame.pack(side="right")
+        
+        ctk.CTkLabel(filtros_frame, text="Período:", font=FONT_NORMAL).pack(side="left", padx=(0, 8))
+        
+        periodos = [("Todos", "todos"), ("Último Mês", "mes"), ("Última Semana", "semana")]
+        for label, periodo in periodos:
+            btn = ctk.CTkButton(
+                filtros_frame, text=label, width=100, height=28,
+                font=FONT_SMALL,
+                fg_color=ACCENT if self.filtro_periodo == periodo else COLOR_BG_LIGHT,
+                text_color="white" if self.filtro_periodo == periodo else COLOR_TEXT_PRIMARY,
+                hover_color=COLOR_HOVER,
+                command=lambda p=periodo: self.aplicar_filtro_periodo(p)
+            )
+            btn.pack(side="left", padx=2)
 
-        # Stats cards row
+        # Stats cards row com hover effect
         stats_frame = ctk.CTkFrame(self, fg_color="transparent")
         stats_frame.pack(pady=12, padx=20, fill="x")
 
-        def make_card(parent, title_text, value_text):
-            card = ctk.CTkFrame(parent, corner_radius=12, fg_color=CARD_BG, border_width=2, border_color=ACCENT)
+        def make_card(parent, icon, title_text, value_text, color):
+            card = ctk.CTkFrame(parent, corner_radius=12, fg_color=CARD_BG, 
+                               border_width=1, border_color=COLOR_BORDER_LIGHT)
             card.pack(side="left", padx=8, fill="both", expand=True)
-            ctk.CTkLabel(card, text=title_text, font=("Arial", 11, "bold"), text_color=("#555","#aaa")).pack(pady=(12,6), padx=12)
-            ctk.CTkLabel(card, text=value_text, font=("Arial", 22, "bold"), text_color=ACCENT).pack(pady=(0,12), padx=12)
+            
+            # Bind hover effect
+            def on_enter(e):
+                card.configure(border_color=color, border_width=2)
+            def on_leave(e):
+                card.configure(border_color=COLOR_BORDER_LIGHT, border_width=1)
+            
+            card.bind("<Enter>", on_enter)
+            card.bind("<Leave>", on_leave)
+            
+            ctk.CTkLabel(card, text=icon, font=("Arial", 24)).pack(pady=(12,4), padx=12)
+            ctk.CTkLabel(card, text=title_text, font=FONT_SMALL, 
+                        text_color=COLOR_TEXT_SECONDARY).pack(pady=(0,4), padx=12)
+            ctk.CTkLabel(card, text=value_text, font=FONT_HEADING, 
+                        text_color=color).pack(pady=(0,12), padx=12)
             return card
 
-        # Compute totals
+        # Compute totals com filtro
+        emprestimos_filtrados = self.filtrar_emprestimos()
         total_clientes = len(self.database.clientes)
-        total_emprestado = sum(getattr(e, 'valor_emprestado', 0.0) for e in self.database.emprestimos)
-        total_owed = sum(getattr(e, 'saldo_devedor', 0.0) for e in self.database.emprestimos)
-        total_paid = sum(
-            float(p.get('valor', 0.0))
-            for e in self.database.emprestimos
-            for p in getattr(e, 'pagamentos', [])
-        )
+        total_emprestado = sum(getattr(e, 'valor_emprestado', 0.0) for e in emprestimos_filtrados)
+        total_owed = sum(getattr(e, 'saldo_devedor', 0.0) for e in emprestimos_filtrados if e.ativo)
+        emprestimos_ativos = len([e for e in emprestimos_filtrados if e.ativo])
 
-        make_card(stats_frame, "Total de Clientes", str(total_clientes))
-        make_card(stats_frame, "Total Emprestado", formatar_moeda(total_emprestado))
-        make_card(stats_frame, "Total em Aberto", formatar_moeda(total_owed))
-        make_card(stats_frame, "Total Pago", formatar_moeda(total_paid))
+        make_card(stats_frame, "👥", "Clientes", str(total_clientes), COLOR_INFO)
+        make_card(stats_frame, "💰", "Emprestado", formatar_moeda(total_emprestado), COLOR_SUCCESS)
+        make_card(stats_frame, "⚠️", "Em Aberto", formatar_moeda(total_owed), COLOR_WARNING)
+        make_card(stats_frame, "📈", "Empréstimos Ativos", str(emprestimos_ativos), ACCENT)
 
         # Chart controls frame
         control_frame = ctk.CTkFrame(self, fg_color="transparent")
         control_frame.pack(pady=12, padx=20, fill="x")
 
-        ctk.CTkLabel(control_frame, text="📊 Gráficos:", font=("Arial", 12, "bold")).pack(side="left", padx=(0, 12))
+        ctk.CTkLabel(control_frame, text="Visualizações:", font=FONT_NORMAL, 
+                    text_color=COLOR_TEXT_PRIMARY).pack(side="left", padx=(0, 12))
         
         chart_options = [
-            ("🥧 Pizza - Status", "pizza_status"),
-            ("🥧 Pizza - Ativos/Inativos", "pizza_ativo"),
-            ("📊 Barras - Distribuição de Valores", "barras_valores"),
+            ("Status", "pizza_status"),
+            ("Ativos/Inativos", "pizza_ativo"),
         ]
         
         for label, chart_type in chart_options:
             btn = ctk.CTkButton(
                 control_frame,
                 text=label,
-                width=150,
+                width=120,
                 height=32,
-                fg_color=ACCENT if self.current_chart == chart_type else ("#e0e0e0", "#333"),
-                text_color="white" if self.current_chart == chart_type else "black",
+                font=FONT_SMALL,
+                corner_radius=8,
+                fg_color=ACCENT if self.current_chart == chart_type else COLOR_BG_LIGHT,
+                text_color="white" if self.current_chart == chart_type else COLOR_TEXT_PRIMARY,
+                hover_color=COLOR_HOVER if self.current_chart != chart_type else ACCENT,
                 command=lambda ct=chart_type: self.trocar_grafico(ct)
             )
             btn.pack(side="left", padx=4)
+            self.chart_buttons[chart_type] = btn
 
         # Chart frame
-        self.chart_frame = ctk.CTkFrame(self, corner_radius=12, fg_color=CARD_BG, border_width=2, border_color=ACCENT)
+        self.chart_frame = ctk.CTkFrame(self, corner_radius=12, fg_color=CARD_BG, 
+                                       border_width=1, border_color=COLOR_BORDER_LIGHT)
         self.chart_frame.pack(pady=12, padx=20, fill="both", expand=True)
 
         # Renderizar gráfico inicial
         self.trocar_grafico(self.current_chart)
+    
+    def filtrar_emprestimos(self):
+        """Filtra empréstimos baseado no período selecionado."""
+        emprestimos = self.database.emprestimos
+        
+        if self.filtro_periodo == "todos":
+            return emprestimos
+        
+        hoje = datetime.now()
+        
+        if self.filtro_periodo == "mes":
+            data_limite = hoje - timedelta(days=30)
+        elif self.filtro_periodo == "semana":
+            data_limite = hoje - timedelta(days=7)
+        else:
+            return emprestimos
+        
+        # Filtrar por data de criação
+        return [e for e in emprestimos if datetime.fromisoformat(e.data_emprestimo) >= data_limite]
+    
+    def aplicar_filtro_periodo(self, periodo):
+        """Aplica filtro de período e atualiza dashboard."""
+        self.filtro_periodo = periodo
+        # Recriar widgets com novo filtro
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.criar_widgets()
 
     def trocar_grafico(self, chart_type):
-        """Alterna entre diferentes tipos de gráficos."""
+        """Alterna entre diferentes tipos de gráficos com transição suave."""
         self.current_chart = chart_type
         
+        # Atualizar cores dos botões - desativar todos, ativar o selecionado
+        for ct, btn in self.chart_buttons.items():
+            if ct == chart_type:
+                btn.configure(fg_color=ACCENT, text_color="white")
+            else:
+                btn.configure(fg_color=("#e0e0e0", "#333"), text_color=("black", "white"))
+        
+        # Limpar frame anterior com fade
+        if self.canvas_widget:
+            self.canvas_widget.pack_forget()
+            self.canvas_widget.destroy()
+        
+        # Pequeno delay para efeito visual de transição
+        self.after(100, lambda: self._renderizar_novo_grafico(chart_type))
+    
+    def _renderizar_novo_grafico(self, chart_type):
+        """Renderiza o novo gráfico após pequeno delay."""
         # Limpar frame anterior
         for widget in self.chart_frame.winfo_children():
             widget.destroy()
@@ -196,10 +281,11 @@ class DashboardView(ctk.CTkFrame):
         self._renderizar_grafico(fig)
 
     def _renderizar_grafico(self, fig):
-        """Renderiza figura matplotlib no canvas do CTk."""
+        """Renderiza figura matplotlib no canvas do CTk com fade-in suave."""
         canvas = FigureCanvasTkAgg(fig, master=self.chart_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True, padx=12, pady=12)
+        self.canvas_widget = canvas.get_tk_widget()
+        self.canvas_widget.pack(fill="both", expand=True, padx=12, pady=12)
 
     def _get_appearance(self):
         """Retorna modo de aparência atual."""

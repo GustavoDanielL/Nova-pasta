@@ -86,16 +86,5 @@
     "chave_pix": "",
     "data_cadastro": "2025-11-24T11:25:11.125141",
     "ativo": true
-  },
-  {
-    "id": "CLI20251209112008",
-    "nome": "ADSARA",
-    "cpf_cnpj": "122345564",
-    "telefone": "123123321",
-    "email": "gugadaniel2009@gmail.com",
-    "endereco": "123123123",
-    "chave_pix": "",
-    "data_cadastro": "2025-12-09T11:20:08.625809",
-    "ativo": true
   }
 ]

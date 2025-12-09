@@ -32,7 +32,11 @@ class QRGenerator:
         janela.title("QR Code para Pagamento")
         janela.geometry("400x500")
         janela.transient(parent)
-        janela.grab_set()
+        janela.update_idletasks()
+        try:
+            janela.grab_set()
+        except Exception:
+            pass
         
         # Gerar QR Code
         img = QRGenerator.gerar_qr_code(valor, descricao)

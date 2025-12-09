@@ -4,8 +4,8 @@ from models.database import Database
 
 class App:
     def __init__(self):
-        # Force dark theme for consistent dark UI
-        ctk.set_appearance_mode("Dark")
+        # Set light theme with modern appearance
+        ctk.set_appearance_mode("Light")
         ctk.set_default_color_theme("blue")
         
         self.db = Database()

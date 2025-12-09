@@ -1,13 +1,13 @@
 import customtkinter as ctk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from pathlib import Path
 import csv
 from datetime import datetime
-# PDF export disabled by default to avoid hard dependency on reportlab
-# (install reportlab or re-enable if you need PDF generation)
+from utils.calculos import formatar_moeda
+from config import *
 
 CARD_BG = ("#ffffff", "#071018")
-ACCENT = "#1abc9c"
+ACCENT = "#ef4444"
 
 class NotificacoesView(ctk.CTkFrame):
     def __init__(self, parent, database):
@@ -16,58 +16,129 @@ class NotificacoesView(ctk.CTkFrame):
         self.criar_widgets()
 
     def criar_widgets(self):
-        title = ctk.CTkLabel(self, text="Notificações", font=("Arial", 20, "bold"))
-        title.pack(pady=(12,8), anchor="w", padx=20)
+        # Header
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.pack(pady=(16,12), padx=20, fill="x")
+        
+        title = ctk.CTkLabel(header_frame, text="🔔 Notificações e Alertas", 
+                           font=FONT_TITLE, text_color=COLOR_TEXT_PRIMARY)
+        title.pack(side="left")
+        
+        # Botões de ação
+        btn_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        btn_frame.pack(side="right")
+        
+        ctk.CTkButton(btn_frame, text="🔄 Atualizar", width=100, height=32,
+                     fg_color=COLOR_INFO, font=FONT_SMALL,
+                     command=self.atualizar_lista).pack(side="left", padx=4)
+        
+        ctk.CTkButton(btn_frame, text="🗑️ Limpar", width=100, height=32,
+                     fg_color=COLOR_DANGER, font=FONT_SMALL,
+                     command=self.limpar).pack(side="left", padx=4)
 
-        table_frame = ctk.CTkFrame(self, corner_radius=12, fg_color=CARD_BG)
-        table_frame.pack(pady=12, padx=20, fill="both", expand=True)
+        # Frame principal scrollable
+        self.scroll_frame = ctk.CTkScrollableFrame(self, corner_radius=12, 
+                                                   fg_color=CARD_BG,
+                                                   border_width=1,
+                                                   border_color=COLOR_BORDER_LIGHT)
+        self.scroll_frame.pack(pady=12, padx=20, fill="both", expand=True)
 
-        columns = ("Tipo", "Mensagem", "Data")
-        self.tree = ttk.Treeview(table_frame, columns=columns, height=12)
-        self.tree.column("#0", width=0, stretch=False)
-        for col in columns:
-            self.tree.column(col, anchor="center", width=180)
-            self.tree.heading(col, text=col)
-        self.tree.pack(fill="both", expand=True, padx=8, pady=8)
+        self.atualizar_lista()
 
-        button_frame = ctk.CTkFrame(self, fg_color="transparent")
-        button_frame.pack(pady=8, padx=20, fill="x")
-        ctk.CTkButton(button_frame, text="Limpar Notificações", fg_color=("#ff6b6b","#8b2a2a"), command=self.limpar).pack(side="left", padx=8)
-        ctk.CTkButton(button_frame, text="Exportar CSV", fg_color=ACCENT, command=self.exportar_csv).pack(side="left", padx=8)
-        ctk.CTkButton(button_frame, text="Atualizar", fg_color=ACCENT, command=self.atualizar_tabela).pack(side="left", padx=8)
-
-        self.atualizar_tabela()
-
-    def atualizar_tabela(self):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        # Primeiro, inserir lembretes genéricos
-        notificacoes = self.database.lembretes if hasattr(self.database, 'lembretes') else []
-        if not notificacoes:
-            self.tree.insert("", "end", values=("Info", "Nenhuma notificação", "---"))
-        else:
-            for lemb in notificacoes:
-                tipo = lemb.get('tipo', 'Info')
-                msg = lemb.get('mensagem', str(lemb))
-                data = lemb.get('data', '---')
-                self.tree.insert("", "end", values=(tipo, msg, data))
-
-        # Em seguida, adicionar empréstimos em atraso
+    def atualizar_lista(self):
+        # Limpar lista
+        for widget in self.scroll_frame.winfo_children():
+            widget.destroy()
+        
+        # Contar notificações
+        total_notif = 0
+        
+        # Empréstimos atrasados
         atrasados = []
         try:
             atrasados = self.database.get_overdue_emprestimos()
         except Exception:
             atrasados = []
-
+        
         if atrasados:
-            # separador visual
-            self.tree.insert("", "end", values=("---", "--- Empréstimos Atrasados ---", "---"))
+            # Seção de atrasados
+            secao = ctk.CTkLabel(self.scroll_frame, text="⚠️ Empréstimos Atrasados", 
+                               font=FONT_HEADING, text_color=COLOR_DANGER)
+            secao.pack(anchor="w", padx=16, pady=(16, 8))
+            
             for emp in atrasados:
+                total_notif += 1
                 cliente = self.database.get_cliente_por_id(emp.cliente_id)
                 nome = cliente.nome if cliente else emp.cliente_id
-                msg = f"ID {emp.id} - {nome} - Saldo: {emp.saldo_devedor:.2f}"
-                data = emp.data_inicio if hasattr(emp, 'data_inicio') else emp.data_criacao[:10]
-                self.tree.insert("", "end", values=("Atraso", msg, data))
+                
+                # Card de notificação
+                card = ctk.CTkFrame(self.scroll_frame, corner_radius=8, 
+                                   fg_color=("#fff5f5", "#2a1515"),
+                                   border_width=1, border_color=COLOR_DANGER)
+                card.pack(fill="x", padx=16, pady=6)
+                
+                # Conteúdo
+                content_frame = ctk.CTkFrame(card, fg_color="transparent")
+                content_frame.pack(fill="x", padx=12, pady=12)
+                
+                ctk.CTkLabel(content_frame, text=f"🔴 Cliente: {nome}", 
+                           font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY,
+                           anchor="w").pack(anchor="w")
+                
+                ctk.CTkLabel(content_frame, 
+                           text=f"ID: {emp.id} | Saldo Devedor: {formatar_moeda(emp.saldo_devedor)}", 
+                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           anchor="w").pack(anchor="w", pady=(4,0))
+                
+                data_str = emp.data_emprestimo[:10] if hasattr(emp, 'data_emprestimo') else "---"
+                ctk.CTkLabel(content_frame, text=f"Data: {data_str}", 
+                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           anchor="w").pack(anchor="w", pady=(2,0))
+        
+        # Lembretes genéricos
+        lembretes = self.database.lembretes if hasattr(self.database, 'lembretes') else []
+        
+        if lembretes:
+            secao = ctk.CTkLabel(self.scroll_frame, text="📝 Lembretes", 
+                               font=FONT_HEADING, text_color=COLOR_INFO)
+            secao.pack(anchor="w", padx=16, pady=(16, 8))
+            
+            for lemb in lembretes:
+                total_notif += 1
+                tipo = lemb.get('tipo', 'Info')
+                msg = lemb.get('mensagem', str(lemb))
+                data = lemb.get('data', '---')
+                
+                card = ctk.CTkFrame(self.scroll_frame, corner_radius=8, 
+                                   fg_color=("#f0f9ff", "#0f1f2a"),
+                                   border_width=1, border_color=COLOR_INFO)
+                card.pack(fill="x", padx=16, pady=6)
+                
+                content_frame = ctk.CTkFrame(card, fg_color="transparent")
+                content_frame.pack(fill="x", padx=12, pady=12)
+                
+                ctk.CTkLabel(content_frame, text=f"📌 {tipo}", 
+                           font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY,
+                           anchor="w").pack(anchor="w")
+                
+                ctk.CTkLabel(content_frame, text=msg, 
+                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           anchor="w").pack(anchor="w", pady=(4,0))
+                
+                ctk.CTkLabel(content_frame, text=f"Data: {data}", 
+                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           anchor="w").pack(anchor="w", pady=(2,0))
+        
+        # Se não há notificações
+        if total_notif == 0:
+            empty_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+            empty_frame.pack(expand=True, pady=50)
+            
+            ctk.CTkLabel(empty_frame, text="✅", font=("Arial", 48)).pack(pady=(0, 16))
+            ctk.CTkLabel(empty_frame, text="Nenhuma notificação pendente", 
+                        font=FONT_SUBTITLE, text_color=COLOR_TEXT_SECONDARY).pack()
+            ctk.CTkLabel(empty_frame, text="Tudo em ordem!", 
+                        font=FONT_NORMAL, text_color=COLOR_SUCCESS).pack(pady=(8,0))
 
     def limpar(self):
         self.database.lembretes = []

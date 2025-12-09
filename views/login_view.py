@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from models.usuario import Usuario
+import threading
+import time
+from config import *
 
 class LoginView(ctk.CTkFrame):
     def __init__(self, parent, database, on_login_success):
@@ -26,11 +29,11 @@ class LoginView(ctk.CTkFrame):
         
         # Título
         title = ctk.CTkLabel(main_frame, text="FinancePro", 
-                           font=("Arial", 32, "bold"))
+                           font=FONT_TITLE, text_color=COLOR_TEXT_PRIMARY)
         title.pack(pady=20)
         
         subtitle = ctk.CTkLabel(main_frame, text="Sistema de Gestão de Empréstimos",
-                              font=("Arial", 16))
+                              font=FONT_SUBTITLE, text_color=COLOR_TEXT_SECONDARY)
         subtitle.pack(pady=5)
         
         # Frame do formulário (contrasting panel)
@@ -38,20 +41,20 @@ class LoginView(ctk.CTkFrame):
         form_frame.pack(pady=40, padx=20)
         
         # Campos de login
-        ctk.CTkLabel(form_frame, text="Usuário:", font=("Arial", 14)).pack(pady=10)
-        self.entry_usuario = ctk.CTkEntry(form_frame, width=300, height=40)
+        ctk.CTkLabel(form_frame, text="Usuário:", font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY).pack(pady=10)
+        self.entry_usuario = ctk.CTkEntry(form_frame, width=300, height=40, font=FONT_NORMAL)
         self.entry_usuario.pack(pady=10)
         self.entry_usuario.insert(0, "admin")
         
-        ctk.CTkLabel(form_frame, text="Senha:", font=("Arial", 14)).pack(pady=10)
-        self.entry_senha = ctk.CTkEntry(form_frame, width=300, height=40, show="•")
+        ctk.CTkLabel(form_frame, text="Senha:", font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY).pack(pady=10)
+        self.entry_senha = ctk.CTkEntry(form_frame, width=300, height=40, show="•", font=FONT_NORMAL)
         self.entry_senha.pack(pady=10)
         self.entry_senha.insert(0, "admin123")
         
         # Botão de login
         btn_login = ctk.CTkButton(form_frame, text="Entrar", 
                                 command=self.fazer_login,
-                                height=45, font=("Arial", 16))
+                                height=45, font=FONT_BUTTON)
         btn_login.pack(pady=20)
         
         # Bind Enter para login
@@ -65,6 +68,7 @@ class LoginView(ctk.CTkFrame):
             messagebox.showerror("Erro", "Preencha todos os campos!")
             return
         
+        # Verificar credenciais diretamente (sem thread)
         for user in self.database.usuarios:
             if user.usuario == usuario:
                 # Use verify_password to detect legacy plain-text entries that need re-hash
@@ -77,8 +81,11 @@ class LoginView(ctk.CTkFrame):
                             self.database.salvar_dados()
                         except Exception:
                             pass
+                    
+                    # Sucesso - chamar callback diretamente
                     self.on_login_success()
                     return
         
+        # Falha
         messagebox.showerror("Erro", "Usuário ou senha incorretos!")
         

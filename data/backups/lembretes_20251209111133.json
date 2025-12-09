@@ -1,0 +1,8 @@
+[
+  {
+    "tipo": "Atraso",
+    "mensagem": "Empréstimo EMP20251117200455 de Cliente Teste está em atraso. Saldo: R$ 803.00",
+    "data": "2025-11-17",
+    "emp_id": "EMP20251117200455"
+  }
+]
