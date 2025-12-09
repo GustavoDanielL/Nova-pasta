@@ -9,6 +9,7 @@ import webbrowser
 import urllib.parse
 from utils.calculos import formatar_moeda
 from models.cliente import Cliente
+from theme_colors import *
 from config import *
 
 # Theme
@@ -38,8 +39,8 @@ class ClientesView(ctk.CTkFrame):
         
         # Botão novo cliente
         btn_novo = ctk.CTkButton(top_frame, text="+ Novo Cliente", command=self.criar_cliente, 
-                                font=FONT_BUTTON, height=36, corner_radius=8,
-                                fg_color=COLOR_BTN_SUCCESS, hover_color=COLOR_BTN_SUCCESS_HOVER)
+                                font=("Segoe UI", 13, "bold"), height=36, corner_radius=8,
+                                fg_color=COR_SUCESSO, hover_color=COR_HOVER)
         btn_novo.pack(side="right", padx=5)
         
         # Frame principal
@@ -66,55 +67,72 @@ class ClientesView(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(self.lista_frame, fg_color="transparent")
         header_frame.pack(fill="x", pady=6, padx=6)
         
-        headers = ["", "Nome", "CPF/CNPJ", "Telefone", "E-mail", "Ações"]
+        headers = ["", "Nome", "CPF/CNPJ", "Telefone", "Status", "Ações"]
         for i, header in enumerate(headers):
-            label = ctk.CTkLabel(header_frame, text=header, font=("Arial", 12, "bold"))
-            label.grid(row=0, column=i, padx=5, pady=5, sticky="w")
+            label = ctk.CTkLabel(header_frame, text=header, font=("Segoe UI", 12, "bold"),
+                               text_color=COR_TEXTO)
+            label.grid(row=0, column=i, padx=8, pady=5, sticky="w")
             if i > 0:
                 header_frame.grid_columnconfigure(i, weight=1)
+        
+        # Cache de empréstimos por cliente (otimização)
+        self.emprestimos_cache = {}
+        for emp in self.database.emprestimos:
+            if emp.cliente_id not in self.emprestimos_cache:
+                self.emprestimos_cache[emp.cliente_id] = []
+            self.emprestimos_cache[emp.cliente_id].append(emp)
         
         # Lista de clientes
         for cliente in clientes:
             self.adicionar_cliente_na_lista(cliente)
     
     def adicionar_cliente_na_lista(self, cliente):
-        # Calcular status do cliente
-        emprestimos_cliente = [e for e in self.database.emprestimos if e.cliente_id == cliente.id]
+        # Calcular status do cliente usando cache
+        emprestimos_cliente = self.emprestimos_cache.get(cliente.id, [])
         emprestimos_ativos = [e for e in emprestimos_cliente if e.ativo and e.saldo_devedor > 0]
         
+        # Definir badge profissional
         if not emprestimos_cliente:
-            badge = "⚪"
-            badge_color = "#9ca3af"
+            badge_text = ""
+            badge_color = COR_BORDA
+            status_text = "Sem empréstimos"
         elif emprestimos_ativos:
-            badge = "🔴"
-            badge_color = "#ef4444"
+            total_devido = sum(e.saldo_devedor for e in emprestimos_ativos)
+            badge_text = "●"
+            badge_color = COR_PERIGO
+            from utils.calculos import formatar_moeda
+            status_text = f"Devendo {formatar_moeda(total_devido)}"
         else:
-            badge = "✅"
-            badge_color = "#10b981"
+            badge_text = "✓"
+            badge_color = COR_SUCESSO
+            status_text = "Em dia"
         
-        frame = ctk.CTkFrame(self.lista_frame, corner_radius=8, fg_color=("#f7f9fb", "#071018"))
-        frame.pack(fill="x", pady=6, padx=6)
+        frame = ctk.CTkFrame(self.lista_frame, corner_radius=8, fg_color=COR_CARD,
+                            border_width=1, border_color=COR_BORDA)
+        frame.pack(fill="x", pady=4, padx=6)
         
-        # Badge de status
-        label_badge = ctk.CTkLabel(frame, text=badge, font=("Arial", 14))
-        label_badge.grid(row=0, column=0, padx=(8, 2), pady=5)
+        # Badge de status profissional
+        if badge_text:
+            badge_frame = ctk.CTkFrame(frame, fg_color=badge_color, width=8, height=30, corner_radius=4)
+            badge_frame.grid(row=0, column=0, padx=(8, 8), pady=8, sticky="ns")
+            badge_frame.grid_propagate(False)
         
-        # Dados do cliente
+        # Dados do cliente com status
         dados = [
-            cliente.nome,
-            cliente.cpf_cnpj,
-            cliente.telefone,
-            cliente.email
+            (cliente.nome, COR_TEXTO, ("Segoe UI", 12, "bold") if emprestimos_ativos else ("Segoe UI", 12)),
+            (cliente.cpf_cnpj, COR_TEXTO_SEC, ("Segoe UI", 11)),
+            (cliente.telefone, COR_TEXTO_SEC, ("Segoe UI", 11)),
+            (status_text, badge_color, ("Segoe UI", 10, "bold"))
         ]
         
-        for i, dado in enumerate(dados):
-            label = ctk.CTkLabel(frame, text=dado)
-            label.grid(row=0, column=i+1, padx=5, pady=5, sticky="w")
+        for i, (dado, cor, fonte) in enumerate(dados):
+            label = ctk.CTkLabel(frame, text=dado, text_color=cor, font=fonte)
+            label.grid(row=0, column=i+1, padx=8, pady=8, sticky="w")
             frame.grid_columnconfigure(i+1, weight=1)
         
         # Botões de ação
         btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        btn_frame.grid(row=0, column=5, padx=5, pady=5)
+        btn_frame.grid(row=0, column=6, padx=5, pady=5)
         
         # Botão Info
         btn_info = ctk.CTkButton(btn_frame, text="👁️ Info", width=70, height=32, corner_radius=8, 
@@ -419,7 +437,7 @@ class ClientesView(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=12)
         ctk.CTkButton(btn_frame, text="✕ Fechar", height=40, width=120,
-                     font=FONT_BUTTON, corner_radius=8,
+                     font=("Segoe UI", 13, "bold"), corner_radius=8,
                      fg_color=COLOR_BTN_SECONDARY, hover_color=COLOR_BTN_SECONDARY_HOVER,
                      command=janela.destroy).pack(pady=8)
 

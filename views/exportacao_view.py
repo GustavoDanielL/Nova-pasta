@@ -11,9 +11,9 @@ import threading
 from pathlib import Path
 
 # Cores
-SIDEBAR_BG = ("#f4f7fb", "#0f1724")
-CONTENT_BG = ("#ffffff", "#0b1220")
-ACCENT = "#1abc9c"
+from theme_colors import *
+CONTENT_BG = COR_CARD
+ACCENT = COR_PRIMARIA
 
 
 class ExportacaoView:
@@ -32,9 +32,9 @@ class ExportacaoView:
         # Título
         title = ctk.CTkLabel(
             main_frame, 
-            text="📥 EXPORTAR DADOS",
-            font=("Arial", 24, "bold"),
-            text_color=ACCENT
+            text="📥 Exportar Dados",
+            font=("Segoe UI", 24, "bold"),
+            text_color=COR_TEXTO
         )
         title.pack(pady=(0, 20))
         
@@ -42,8 +42,8 @@ class ExportacaoView:
         desc = ctk.CTkLabel(
             main_frame,
             text="Exporte seus dados financeiros em formato Excel com múltiplas opções de relatórios",
-            font=("Arial", 12),
-            text_color=("gray60", "gray50")
+            font=("Segoe UI", 12),
+            text_color=COR_TEXTO_SEC
         )
         desc.pack(pady=(0, 30))
         

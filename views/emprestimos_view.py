@@ -5,9 +5,10 @@ from models.emprestimo import Emprestimo
 from datetime import datetime
 from utils.calculos import formatar_moeda
 from utils import validators
+from theme_colors import *
 
-CARD_BG = ("#0b1220", "#0b1220")
-ACCENT = "#1abc9c"
+CARD_BG = COR_CARD
+ACCENT = COR_PRIMARIA
 
 class EmprestimosView(ctk.CTkFrame):
     def __init__(self, parent, database):
@@ -17,26 +18,31 @@ class EmprestimosView(ctk.CTkFrame):
         self.criar_widgets()
 
     def criar_widgets(self):
-        title = ctk.CTkLabel(self, text="Empréstimos", font=("Arial", 24, "bold"), text_color=ACCENT)
+        title = ctk.CTkLabel(self, text="💰 Empréstimos", font=("Segoe UI", 24, "bold"), 
+                           text_color=COR_TEXTO)
         title.pack(pady=(16,12), anchor="w", padx=20)
 
         # Simple filter frame - just search by client name
         filter_frame = ctk.CTkFrame(self, fg_color="transparent")
         filter_frame.pack(padx=20, pady=(0,12), fill="x")
 
-        ctk.CTkLabel(filter_frame, text="Filtrar por cliente:", font=("Arial", 12)).pack(side="left", padx=(0,8))
-        self.search_entry = ctk.CTkEntry(filter_frame, placeholder_text="Nome do cliente...", width=300)
+        ctk.CTkLabel(filter_frame, text="Filtrar por cliente:", font=("Segoe UI", 12),
+                    text_color=COR_TEXTO).pack(side="left", padx=(0,8))
+        self.search_entry = ctk.CTkEntry(filter_frame, placeholder_text="Nome do cliente...", 
+                                        width=300, border_color=COR_BORDA)
         self.search_entry.pack(side="left", padx=(0,8), fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", lambda e: self.atualizar_tabela())
 
         # Main card with rounded corners and better styling
-        main_card = ctk.CTkFrame(self, corner_radius=16, fg_color=CARD_BG, border_width=2, border_color=ACCENT)
+        main_card = ctk.CTkFrame(self, corner_radius=12, fg_color=CARD_BG, 
+                                border_width=2, border_color=COR_BORDA)
         main_card.pack(padx=20, pady=(0,16), fill="both", expand=True)
 
         # Card header with title
         card_header = ctk.CTkFrame(main_card, fg_color="transparent")
         card_header.pack(fill="x", padx=16, pady=12, side="top")
-        ctk.CTkLabel(card_header, text="Empréstimos Cadastrados", font=("Arial", 14, "bold")).pack(side="left")
+        ctk.CTkLabel(card_header, text="Empréstimos Cadastrados", font=("Segoe UI", 14, "bold"),
+                    text_color=COR_TEXTO).pack(side="left")
 
         # Table inside the card - SIMPLIFICADA
         table_frame = ctk.CTkFrame(main_card, fg_color="transparent")
@@ -65,15 +71,15 @@ class EmprestimosView(ctk.CTkFrame):
         # Alternative: Use different font weight or style
         self.tree.tag_configure("active", foreground="#27ae60")  # Green
         self.tree.tag_configure("inactive", foreground="#95a5a6")  # Gray
-        self.tree.tag_configure("overdue", foreground="#e74c3c", font=("Arial", 10, "bold"))  # Red and bold
+        self.tree.tag_configure("overdue", foreground="#e74c3c", font=("Segoe UI", 10, "bold"))  # Red and bold
 
         # Action buttons frame
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
         button_frame.pack(padx=20, pady=12, fill="x")
-        ctk.CTkButton(button_frame, text="➕ Novo Empréstimo", fg_color=ACCENT, font=("Arial", 12, "bold"), height=36, command=self.novo_emprestimo).pack(side="left", padx=6)
-        ctk.CTkButton(button_frame, text="💵 Registrar Pagamento", font=("Arial", 12), height=36, command=self.registrar_pagamento).pack(side="left", padx=6)
-        ctk.CTkButton(button_frame, text="📝 Editar", font=("Arial", 12), height=36, command=self.editar).pack(side="left", padx=6)
-        ctk.CTkButton(button_frame, text="🗑 Deletar", fg_color=("#ff6b6b","#8b2a2a"), font=("Arial", 12), height=36, command=self.deletar).pack(side="left", padx=6)
+        ctk.CTkButton(button_frame, text="➕ Novo Empréstimo", fg_color=ACCENT, font=("Segoe UI", 12, "bold"), height=36, command=self.novo_emprestimo).pack(side="left", padx=6)
+        ctk.CTkButton(button_frame, text="💵 Registrar Pagamento", font=("Segoe UI", 12), height=36, command=self.registrar_pagamento).pack(side="left", padx=6)
+        ctk.CTkButton(button_frame, text="📝 Editar", font=("Segoe UI", 12), height=36, command=self.editar).pack(side="left", padx=6)
+        ctk.CTkButton(button_frame, text="🗑 Deletar", fg_color=("#ff6b6b","#8b2a2a"), font=("Segoe UI", 12), height=36, command=self.deletar).pack(side="left", padx=6)
 
         self.atualizar_tabela()
 
@@ -148,55 +154,55 @@ class EmprestimosView(ctk.CTkFrame):
             pass
 
         # Frame principal
-        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=("#0b1220", "#0b1220"))
+        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=COR_CARD, border_width=1, border_color=COR_BORDA)
         main_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
         # Seção 1: Dados básicos
-        titulo = ctk.CTkLabel(main_frame, text="📋 Dados do Empréstimo", font=("Arial", 14, "bold"), text_color=ACCENT)
+        titulo = ctk.CTkLabel(main_frame, text="📋 Dados do Empréstimo", font=("Segoe UI", 14, "bold"), text_color=COR_TEXTO)
         titulo.pack(anchor="w", padx=16, pady=(16,12))
 
         # Cliente
-        ctk.CTkLabel(main_frame, text="👤 Cliente:", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,6))
+        ctk.CTkLabel(main_frame, text="👤 Cliente:", font=("Segoe UI", 11, "bold"), text_color=COR_TEXTO).pack(anchor="w", padx=16, pady=(0,6))
         clientes_choices = [f"{c.id} - {c.nome}" for c in self.database.clientes]
         cliente_var = ctk.StringVar(value=clientes_choices[0] if clientes_choices else "")
         cliente_menu = ctk.CTkOptionMenu(main_frame, values=clientes_choices, variable=cliente_var, 
-                                         font=("Arial", 11), dropdown_font=("Arial", 10))
+                                         font=("Segoe UI", 11), dropdown_font=("Segoe UI", 10), fg_color=COR_PRIMARIA)
         cliente_menu.pack(fill="x", padx=16, pady=(0,12))
 
         # Valor - com label de exemplo
-        ctk.CTkLabel(main_frame, text="💰 Valor do Empréstimo (R$):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Exemplo: 1000 ou 1500,50", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        ctk.CTkLabel(main_frame, text="💰 Valor do Empréstimo (R$):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
+        ctk.CTkLabel(main_frame, text="Exemplo: 1000 ou 1500,50", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
         vcmd_decimal = (self.register(validators.validate_decimal), '%P')
-        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="0.00", validate='key', validatecommand=vcmd_decimal, height=36, font=("Arial", 11))
+        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="0.00", validate='key', validatecommand=vcmd_decimal, height=36, font=("Segoe UI", 11))
         entry_valor.pack(fill="x", padx=16, pady=(0,12))
 
         # Taxa - com slider visual
-        ctk.CTkLabel(main_frame, text="📊 Taxa de Juros (% ao mês):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Exemplo: 2% = 2 | 5% = 5", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        ctk.CTkLabel(main_frame, text="📊 Taxa de Juros (% ao mês):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
+        ctk.CTkLabel(main_frame, text="Exemplo: 2% = 2 | 5% = 5", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
         vcmd_int = (self.register(validators.validate_integer), '%P')
-        entry_taxa = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Arial", 11), width=100)
+        entry_taxa = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Segoe UI", 11), width=100)
         entry_taxa.pack(anchor="w", padx=16, pady=(0,12))
 
         # Prazo
-        ctk.CTkLabel(main_frame, text="⏱️ Prazo (meses):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Exemplo: 6, 12, 24", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
-        entry_prazo = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Arial", 11), width=100)
+        ctk.CTkLabel(main_frame, text="⏱️ Prazo (meses):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
+        ctk.CTkLabel(main_frame, text="Exemplo: 6, 12, 24", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        entry_prazo = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Segoe UI", 11), width=100)
         entry_prazo.pack(anchor="w", padx=16, pady=(0,12))
 
         # Data de Vencimento (nova)
-        ctk.CTkLabel(main_frame, text="📅 Data de Vencimento (opcional):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Deixe em branco para calcular automaticamente (prazo em meses)", font=("Arial", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
-        entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD (opcional)", height=36, font=("Arial", 11))
+        ctk.CTkLabel(main_frame, text="📅 Data de Vencimento (opcional):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
+        ctk.CTkLabel(main_frame, text="Deixe em branco para calcular automaticamente (prazo em meses)", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD (opcional)", height=36, font=("Segoe UI", 11))
         entry_data_venc.pack(fill="x", padx=16, pady=(0,16))
 
         # Seção 2: Preview de cálculos
-        preview_titulo = ctk.CTkLabel(main_frame, text="📈 Preview do Empréstimo", font=("Arial", 14, "bold"), text_color=ACCENT)
+        preview_titulo = ctk.CTkLabel(main_frame, text="📈 Preview do Empréstimo", font=("Segoe UI", 14, "bold"), text_color=ACCENT)
         preview_titulo.pack(anchor="w", padx=16, pady=(0,12))
 
         preview_frame = ctk.CTkFrame(main_frame, corner_radius=8, fg_color=("#f9f9f9", "#0a1419"), border_width=1, border_color=ACCENT)
         preview_frame.pack(fill="both", padx=16, pady=(0,16))
 
-        preview_label = ctk.CTkLabel(preview_frame, text="", font=("Arial", 10), justify="left", text_color=("#333","#ddd"))
+        preview_label = ctk.CTkLabel(preview_frame, text="", font=("Segoe UI", 10), justify="left", text_color=("#333","#ddd"))
         preview_label.pack(anchor="w", padx=12, pady=12)
 
         def atualizar_preview(*args):
@@ -303,7 +309,7 @@ class EmprestimosView(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=12)
 
-        ctk.CTkButton(btn_frame, text="✓ Confirmar", fg_color=ACCENT, height=36, font=("Arial", 12, "bold"), command=salvar).pack(side="left", padx=6)
+        ctk.CTkButton(btn_frame, text="✓ Confirmar", fg_color=ACCENT, height=36, font=("Segoe UI", 12, "bold"), command=salvar).pack(side="left", padx=6)
         ctk.CTkButton(btn_frame, text="✕ Cancelar", height=36, command=janela.destroy).pack(side="left", padx=6)
 
     def registrar_pagamento(self):
@@ -340,21 +346,21 @@ class EmprestimosView(ctk.CTkFrame):
         except Exception:
             pass
 
-        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=("#0b1220", "#0b1220"))
+        main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         main_frame.pack(fill="both", expand=True, padx=12, pady=12)
 
         # Informações
         cliente_obj = self.database.get_cliente_por_id(emprestimo.cliente_id)
         cliente_nome = cliente_obj.nome if cliente_obj else "Desconhecido"
         
-        ctk.CTkLabel(main_frame, text=f"Empréstimo de {cliente_nome}", font=("Arial", 12, "bold")).pack(anchor="w", padx=16, pady=(16,8))
+        ctk.CTkLabel(main_frame, text=f"Empréstimo de {cliente_nome}", font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=16, pady=(16,8))
         ctk.CTkLabel(main_frame, text=f"Saldo devedor: {formatar_moeda(emprestimo.saldo_devedor)}", 
-                     font=("Arial", 11), text_color=("#ff6b6b", "#ff9999")).pack(anchor="w", padx=16, pady=(0,16))
+                     font=("Segoe UI", 11), text_color=("#ff6b6b", "#ff9999")).pack(anchor="w", padx=16, pady=(0,16))
 
         # Campo de valor
-        ctk.CTkLabel(main_frame, text="💰 Valor a pagar (R$):", font=("Arial", 11, "bold")).pack(anchor="w", padx=16, pady=(0,6))
+        ctk.CTkLabel(main_frame, text="💰 Valor a pagar (R$):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,6))
         vcmd = (self.register(validators.validate_decimal), '%P')
-        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="Digite o valor", validate='key', validatecommand=vcmd, height=36, font=("Arial", 11))
+        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="Digite o valor", validate='key', validatecommand=vcmd, height=36, font=("Segoe UI", 11))
         entry_valor.pack(fill="x", padx=16, pady=(0,12))
 
         # Botões rápidos
@@ -379,8 +385,8 @@ class EmprestimosView(ctk.CTkFrame):
         sep.pack(fill="x", padx=16, pady=(0,12))
 
         # Campo de data (opcional)
-        ctk.CTkLabel(main_frame, text="📅 Data (opcional - deixe em branco para hoje):", font=("Arial", 10)).pack(anchor="w", padx=16, pady=(0,6))
-        entry_data = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD", height=32, font=("Arial", 10))
+        ctk.CTkLabel(main_frame, text="📅 Data (opcional - deixe em branco para hoje):", font=("Segoe UI", 10)).pack(anchor="w", padx=16, pady=(0,6))
+        entry_data = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD", height=32, font=("Segoe UI", 10))
         entry_data.pack(fill="x", padx=16, pady=(0,12))
 
         # Botões
@@ -426,7 +432,7 @@ class EmprestimosView(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", padx=16, pady=12)
 
-        ctk.CTkButton(btn_frame, text="✓ Confirmar", fg_color=ACCENT, height=36, font=("Arial", 12, "bold"), command=confirmar).pack(side="left", padx=6)
+        ctk.CTkButton(btn_frame, text="✓ Confirmar", fg_color=ACCENT, height=36, font=("Segoe UI", 12, "bold"), command=confirmar).pack(side="left", padx=6)
         ctk.CTkButton(btn_frame, text="✕ Cancelar", height=36, command=janela.destroy).pack(side="left", padx=6)
 
     def editar(self):
@@ -460,7 +466,7 @@ class EmprestimosView(ctk.CTkFrame):
         except Exception:
             pass
 
-        frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=("#0b1220", "#0b1220"))
+        frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         frame.pack(fill="both", expand=True, padx=12, pady=12)
 
         # Informações principais
@@ -481,7 +487,7 @@ class EmprestimosView(ctk.CTkFrame):
         # Histórico de Pagamentos
         hist_header = ctk.CTkFrame(frame, fg_color="transparent")
         hist_header.pack(fill="x", padx=12, pady=(12,8))
-        ctk.CTkLabel(hist_header, text="📋 Histórico de Pagamentos", font=("Arial", 12, "bold")).pack(side="left")
+        ctk.CTkLabel(hist_header, text="📋 Histórico de Pagamentos", font=("Segoe UI", 12, "bold")).pack(side="left")
 
         # Pagamentos (histórico com scrollbar melhor)
         pagamentos_frame = ctk.CTkFrame(frame, corner_radius=8, fg_color=("#f9f9f9", "#0a1419"), border_width=1, border_color=ACCENT)
@@ -519,12 +525,12 @@ class EmprestimosView(ctk.CTkFrame):
         pag_header.pack(fill="x", padx=12, pady=(12,8))
         
         if emprestimo.saldo_devedor <= 0:
-            ctk.CTkLabel(pag_header, text="✓ Empréstimo Quitado", font=("Arial", 12, "bold"), text_color="#27ae60").pack(side="left")
-            ctk.CTkLabel(pag_header, text="Nenhum pagamento adicional necessário", font=("Arial", 10), text_color="#27ae60").pack(side="right")
+            ctk.CTkLabel(pag_header, text="✓ Empréstimo Quitado", font=("Segoe UI", 12, "bold"), text_color="#27ae60").pack(side="left")
+            ctk.CTkLabel(pag_header, text="Nenhum pagamento adicional necessário", font=("Segoe UI", 10), text_color="#27ae60").pack(side="right")
         else:
-            ctk.CTkLabel(pag_header, text="💰 Registrar Pagamento", font=("Arial", 12, "bold")).pack(side="left")
+            ctk.CTkLabel(pag_header, text="💰 Registrar Pagamento", font=("Segoe UI", 12, "bold")).pack(side="left")
             ctk.CTkLabel(pag_header, text=f"Saldo devedor: {formatar_moeda(emprestimo.saldo_devedor)}", 
-                         font=("Arial", 10), text_color=("#ff6b6b", "#ff9999")).pack(side="right")
+                         font=("Segoe UI", 10), text_color=("#ff6b6b", "#ff9999")).pack(side="right")
         
         # Mostrar seção de pagamento apenas se não quitado
         if emprestimo.saldo_devedor > 0:
@@ -535,7 +541,7 @@ class EmprestimosView(ctk.CTkFrame):
             valor_frame = ctk.CTkFrame(pay_frame, fg_color="transparent")
             valor_frame.pack(fill="x", padx=12, pady=12)
             
-            ctk.CTkLabel(valor_frame, text="Valor a pagar:", font=("Arial", 11, "bold")).pack(side="left", padx=(0,12))
+            ctk.CTkLabel(valor_frame, text="Valor a pagar:", font=("Segoe UI", 11, "bold")).pack(side="left", padx=(0,12))
             entry_pay = ctk.CTkEntry(valor_frame, placeholder_text="Ex: 100.50", width=150)
             entry_pay.pack(side="left", padx=(0,8))
             
@@ -566,7 +572,7 @@ class EmprestimosView(ctk.CTkFrame):
             data_frame = ctk.CTkFrame(pay_frame, fg_color="transparent")
             data_frame.pack(fill="x", padx=12, pady=(0,12))
             
-            ctk.CTkLabel(data_frame, text="Data (opcional):", font=("Arial", 11)).pack(side="left", padx=(0,12))
+            ctk.CTkLabel(data_frame, text="Data (opcional):", font=("Segoe UI", 11)).pack(side="left", padx=(0,12))
             entry_pay_date = ctk.CTkEntry(data_frame, placeholder_text="YYYY-MM-DD (deixe em branco = hoje)", width=250)
             entry_pay_date.pack(side="left", fill="x", expand=True)
 
@@ -644,15 +650,15 @@ class EmprestimosView(ctk.CTkFrame):
             btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
             btn_frame.pack(fill="x", padx=12, pady=12)
             
-            ctk.CTkButton(btn_frame, text="✓ Registrar Pagamento", height=36, font=("Arial", 12, "bold"), 
+            ctk.CTkButton(btn_frame, text="✓ Registrar Pagamento", height=36, font=("Segoe UI", 12, "bold"), 
                          fg_color=ACCENT, command=registrar_pagamento).pack(side="left", padx=6)
-            ctk.CTkButton(btn_frame, text="✕ Fechar", height=36, font=("Arial", 12), 
+            ctk.CTkButton(btn_frame, text="✕ Fechar", height=36, font=("Segoe UI", 12), 
                          command=janela.destroy).pack(side="left", padx=6)
         else:
             # Se quitado, mostrar apenas botão Fechar
             btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
             btn_frame.pack(fill="x", padx=12, pady=12)
-            ctk.CTkButton(btn_frame, text="✕ Fechar", height=36, font=("Arial", 12), 
+            ctk.CTkButton(btn_frame, text="✕ Fechar", height=36, font=("Segoe UI", 12), 
                          command=janela.destroy).pack(side="left", padx=6)
 
     def deletar(self):

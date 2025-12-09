@@ -5,64 +5,86 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from pathlib import Path
-
-# Colors
-CARD_BG = ("#ffffff", "#0b1220")
-ACCENT = "#1abc9c"
-CHART_COLORS = ["#1abc9c", "#e74c3c", "#f39c12", "#27ae60", "#3498db", "#9b59b6"]
+from theme_colors import *
 
 class DashboardView(ctk.CTkFrame):
     def __init__(self, parent, database):
         super().__init__(parent, fg_color="transparent")
         self.database = database
-        self.current_chart = "pizza_status"  # Default chart type
+        self.current_chart = "pizza_status"
         self.fig = None
         self.canvas_widget = None
-        self.chart_buttons = {}  # Para rastrear os botões
+        self.chart_buttons = {}
+        self.filtro_cliente = "todos"  # todos ou ID específico
         self.pack(fill="both", expand=True)
         self.criar_widgets()
 
     def criar_widgets(self):
-        # Title
-        title = ctk.CTkLabel(self, text="Dashboard", font=("Arial", 24, "bold"), text_color=ACCENT)
-        title.pack(pady=(16,12), anchor="w", padx=20)
+        # Header com título e filtros
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.pack(pady=(16,12), padx=20, fill="x")
+        
+        title = ctk.CTkLabel(header_frame, text="📊 Dashboard", font=("Segoe UI", 24, "bold"), 
+                           text_color=COR_TEXTO)
+        title.pack(side="left")
+        
+        # Filtros
+        filtros_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        filtros_frame.pack(side="right")
+        
+        # Filtro de cliente
+        ctk.CTkLabel(filtros_frame, text="Cliente:", font=("Segoe UI", 11),
+                    text_color=COR_TEXTO).pack(side="left", padx=(0, 8))
+        
+        clientes_nomes = ["Todos"] + [c.nome for c in self.database.clientes]
+        self.cliente_dropdown = ctk.CTkComboBox(filtros_frame, values=clientes_nomes,
+                                               width=180, command=self.aplicar_filtros)
+        self.cliente_dropdown.set("Todos")
+        self.cliente_dropdown.pack(side="left", padx=4)
+        
+        # Filtro de data inicial
+        ctk.CTkLabel(filtros_frame, text="De:", font=("Segoe UI", 11),
+                    text_color=COR_TEXTO).pack(side="left", padx=(12, 8))
+        
+        self.data_inicio = ctk.CTkEntry(filtros_frame, width=110, placeholder_text="DD/MM/AAAA")
+        self.data_inicio.pack(side="left", padx=4)
+        self.data_inicio.bind("<KeyRelease>", lambda e: self.aplicar_filtros())
+        
+        # Filtro de data final
+        ctk.CTkLabel(filtros_frame, text="Até:", font=("Segoe UI", 11),
+                    text_color=COR_TEXTO).pack(side="left", padx=(8, 8))
+        
+        self.data_fim = ctk.CTkEntry(filtros_frame, width=110, placeholder_text="DD/MM/AAAA")
+        self.data_fim.pack(side="left", padx=4)
+        self.data_fim.bind("<KeyRelease>", lambda e: self.aplicar_filtros())
+        
+        # Botão limpar filtros
+        ctk.CTkButton(filtros_frame, text="🔄", width=32, height=28,
+                     command=self.limpar_filtros, fg_color=COR_TEXTO_SEC,
+                     hover_color=COR_HOVER).pack(side="left", padx=(4, 0))
 
         # Stats cards row
-        stats_frame = ctk.CTkFrame(self, fg_color="transparent")
-        stats_frame.pack(pady=12, padx=20, fill="x")
-
-        def make_card(parent, title_text, value_text):
-            card = ctk.CTkFrame(parent, corner_radius=12, fg_color=CARD_BG, border_width=2, border_color=ACCENT)
-            card.pack(side="left", padx=8, fill="both", expand=True)
-            ctk.CTkLabel(card, text=title_text, font=("Arial", 11, "bold"), text_color=("#555","#aaa")).pack(pady=(12,6), padx=12)
-            ctk.CTkLabel(card, text=value_text, font=("Arial", 22, "bold"), text_color=ACCENT).pack(pady=(0,12), padx=12)
-            return card
-
-        # Compute totals
-        total_clientes = len(self.database.clientes)
-        total_emprestado = sum(getattr(e, 'valor_emprestado', 0.0) for e in self.database.emprestimos)
-        total_owed = sum(getattr(e, 'saldo_devedor', 0.0) for e in self.database.emprestimos)
-        total_paid = sum(
-            float(p.get('valor', 0.0))
-            for e in self.database.emprestimos
-            for p in getattr(e, 'pagamentos', [])
-        )
-
-        make_card(stats_frame, "Total de Clientes", str(total_clientes))
-        make_card(stats_frame, "Total Emprestado", formatar_moeda(total_emprestado))
-        make_card(stats_frame, "Total em Aberto", formatar_moeda(total_owed))
-        make_card(stats_frame, "Total Pago", formatar_moeda(total_paid))
+        self.stats_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.stats_frame.pack(pady=12, padx=20, fill="x")
+        
+        # Info do filtro
+        self.filtro_info = ctk.CTkLabel(self, text="📌 Exibindo: Todos os clientes", 
+                                       font=("Segoe UI", 10), text_color=COR_TEXTO_SEC)
+        self.filtro_info.pack(pady=(0, 8))
+        
+        self.criar_cards_stats()
 
         # Chart controls frame
         control_frame = ctk.CTkFrame(self, fg_color="transparent")
         control_frame.pack(pady=12, padx=20, fill="x")
 
-        ctk.CTkLabel(control_frame, text="📊 Gráficos:", font=("Arial", 12, "bold")).pack(side="left", padx=(0, 12))
+        ctk.CTkLabel(control_frame, text="📊 Gráficos:", font=("Segoe UI", 12, "bold"),
+                    text_color=COR_TEXTO).pack(side="left", padx=(0, 12))
         
         chart_options = [
             ("🥧 Pizza - Status", "pizza_status"),
             ("🥧 Pizza - Ativos/Inativos", "pizza_ativo"),
-            ("📊 Barras - Distribuição de Valores", "barras_valores"),
+            ("📊 Barras - Distribuição", "barras_valores"),
         ]
         
         for label, chart_type in chart_options:
@@ -71,30 +93,132 @@ class DashboardView(ctk.CTkFrame):
                 text=label,
                 width=150,
                 height=32,
-                fg_color=ACCENT if self.current_chart == chart_type else ("#e0e0e0", "#333"),
-                text_color="white" if self.current_chart == chart_type else "black",
-                command=lambda ct=chart_type: self.trocar_grafico(ct)
+                fg_color=COR_PRIMARIA if self.current_chart == chart_type else "transparent",
+                text_color="white" if self.current_chart == chart_type else COR_TEXTO,
+                border_width=1,
+                border_color=COR_PRIMARIA,
+                hover_color=COR_HOVER,
+                command=lambda ct=chart_type: self.trocar_grafico(ct),
+                font=("Segoe UI", 10)
             )
             btn.pack(side="left", padx=4)
-            self.chart_buttons[chart_type] = btn  # Salvar referência do botão
+            self.chart_buttons[chart_type] = btn
 
         # Chart frame
-        self.chart_frame = ctk.CTkFrame(self, corner_radius=12, fg_color=CARD_BG, border_width=2, border_color=ACCENT)
+        self.chart_frame = ctk.CTkFrame(self, corner_radius=12, fg_color=COR_CARD, 
+                                       border_width=1, border_color=COR_BORDA)
         self.chart_frame.pack(pady=12, padx=20, fill="both", expand=True)
 
         # Renderizar gráfico inicial
         self.trocar_grafico(self.current_chart)
 
+    def aplicar_filtros(self, escolha=None):
+        """Aplica filtros de cliente e data nos dados do dashboard"""
+        from datetime import datetime
+        
+        # Filtro de cliente
+        escolha = escolha or self.cliente_dropdown.get()
+        if escolha == "Todos":
+            self.filtro_cliente = "todos"
+        else:
+            for c in self.database.clientes:
+                if c.nome == escolha:
+                    self.filtro_cliente = c.id
+                    break
+        
+        # Construir mensagem de filtro
+        filtro_msgs = []
+        if escolha != "Todos":
+            filtro_msgs.append(escolha)
+        
+        # Validar datas
+        data_inicio_str = self.data_inicio.get().strip()
+        data_fim_str = self.data_fim.get().strip()
+        
+        if data_inicio_str or data_fim_str:
+            if data_inicio_str:
+                filtro_msgs.append(f"De: {data_inicio_str}")
+            if data_fim_str:
+                filtro_msgs.append(f"Até: {data_fim_str}")
+        
+        # Atualizar label de info
+        if filtro_msgs:
+            self.filtro_info.configure(text=f"📌 Filtros: {' | '.join(filtro_msgs)}")
+        else:
+            self.filtro_info.configure(text="📌 Exibindo: Todos os dados")
+        
+        # Atualizar dashboard
+        self.atualizar_dashboard()
+    
+    def limpar_filtros(self):
+        """Limpa todos os filtros"""
+        self.cliente_dropdown.set("Todos")
+        self.data_inicio.delete(0, 'end')
+        self.data_fim.delete(0, 'end')
+        self.aplicar_filtros()
+    
+    def filtrar_emprestimos(self):
+        """Retorna empréstimos filtrados por cliente e data"""
+        from datetime import datetime
+        
+        # Filtro por cliente
+        if self.filtro_cliente == "todos":
+            emprestimos = self.database.emprestimos
+        else:
+            emprestimos = [e for e in self.database.emprestimos if e.cliente_id == self.filtro_cliente]
+        
+        # Filtro por data
+        data_inicio_str = self.data_inicio.get().strip()
+        data_fim_str = self.data_fim.get().strip()
+        
+        if data_inicio_str or data_fim_str:
+            emprestimos_filtrados = []
+            for e in emprestimos:
+                try:
+                    # Converter data de criação do empréstimo
+                    data_emp = datetime.strptime(e.data_criacao[:10], "%Y-%m-%d")
+                    
+                    # Validar data inicial
+                    if data_inicio_str:
+                        try:
+                            data_inicio = datetime.strptime(data_inicio_str, "%d/%m/%Y")
+                            if data_emp < data_inicio:
+                                continue
+                        except ValueError:
+                            pass  # Ignora formato inválido
+                    
+                    # Validar data final
+                    if data_fim_str:
+                        try:
+                            data_fim = datetime.strptime(data_fim_str, "%d/%m/%Y")
+                            if data_emp > data_fim:
+                                continue
+                        except ValueError:
+                            pass  # Ignora formato inválido
+                    
+                    emprestimos_filtrados.append(e)
+                except:
+                    emprestimos_filtrados.append(e)  # Inclui se não conseguir validar
+            
+            return emprestimos_filtrados
+        
+        return emprestimos
+    
+    def atualizar_dashboard(self):
+        """Atualiza stats e gráficos com base nos filtros"""
+        self.criar_cards_stats()
+        self.trocar_grafico(self.current_chart)
+    
     def trocar_grafico(self, chart_type):
         """Alterna entre diferentes tipos de gráficos com transição suave."""
         self.current_chart = chart_type
         
-        # Atualizar cores dos botões - desativar todos, ativar o selecionado
+        # Atualizar cores dos botões
         for ct, btn in self.chart_buttons.items():
             if ct == chart_type:
-                btn.configure(fg_color=ACCENT, text_color="white")
+                btn.configure(fg_color=COR_PRIMARIA, text_color="white")
             else:
-                btn.configure(fg_color=("#e0e0e0", "#333"), text_color=("black", "white"))
+                btn.configure(fg_color="transparent", text_color=COR_TEXTO)
         
         # Limpar frame anterior com fade
         if self.canvas_widget:
@@ -120,52 +244,62 @@ class DashboardView(ctk.CTkFrame):
 
     def criar_pizza_status(self):
         """Gráfico de pizza: Empréstimos em diferentes status."""
-        ativos = len([e for e in self.database.emprestimos if e.ativo])
-        inativos = len([e for e in self.database.emprestimos if not e.ativo])
+        # Filtrar empréstimos
+        emprestimos = self.filtrar_emprestimos()
+        
+        ativos = len([e for e in emprestimos if e.ativo])
+        inativos = len([e for e in emprestimos if not e.ativo])
         
         try:
-            atrasados = len(self.database.get_overdue_emprestimos())
+            todos_atrasados = self.database.get_overdue_emprestimos()
+            # Filtrar atrasados pelos empréstimos já filtrados
+            emprestimos_ids = set(e.id for e in emprestimos)
+            todos_atrasados = [e for e in todos_atrasados if e.id in emprestimos_ids]
+            atrasados = len(todos_atrasados)
         except:
             atrasados = 0
 
-        dados = [ativos - atrasados, atrasados, inativos] if ativos > 0 else [0]
+        dados = [ativos - atrasados, atrasados, inativos] if ativos > 0 else [0, 0, 1]
         labels = ["Ativo (em dia)", "Atrasado", "Inativo"]
-        cores = ["#27ae60", "#e74c3c", "#95a5a6"]
+        cores = [COR_SUCESSO, COR_PERIGO, COR_TEXTO_SEC]
 
-        fig = Figure(figsize=(6, 4), dpi=100, facecolor='#0b1220' if self._get_appearance() == "Dark" else "#ffffff")
+        fig = Figure(figsize=(6, 4), dpi=100, facecolor="#ffffff")
         ax = fig.add_subplot(111)
         wedges, texts, autotexts = ax.pie(dados, labels=labels, colors=cores, autopct='%1.1f%%', startangle=90)
-        # Mudar cores das labels para branco
+        
         for text in texts:
-            text.set_color('white')
+            text.set_color(COR_TEXTO)
             text.set_fontsize(11)
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_fontsize(10)
-        ax.set_title("Distribuição de Empréstimos por Status", fontsize=12, fontweight='bold', color='white')
+        ax.set_title("Distribuição por Status", fontsize=13, fontweight='bold', color=COR_TEXTO, pad=20)
         
         self._renderizar_grafico(fig)
 
     def criar_pizza_ativo(self):
         """Gráfico de pizza: Ativos vs Inativos."""
-        ativos = len([e for e in self.database.emprestimos if e.ativo])
-        inativos = len([e for e in self.database.emprestimos if not e.ativo])
+        # Filtrar empréstimos
+        emprestimos = self.filtrar_emprestimos()
+        
+        ativos = len([e for e in emprestimos if e.ativo])
+        inativos = len([e for e in emprestimos if not e.ativo])
 
         dados = [ativos, inativos] if (ativos + inativos) > 0 else [1]
         labels = [f"Ativos ({ativos})", f"Inativos ({inativos})"]
-        cores = ["#27ae60", "#95a5a6"]
+        cores = [COR_INFO, COR_TEXTO_SEC]
 
-        fig = Figure(figsize=(6, 4), dpi=100, facecolor='#0b1220' if self._get_appearance() == "Dark" else "#ffffff")
+        fig = Figure(figsize=(6, 4), dpi=100, facecolor="#ffffff")
         ax = fig.add_subplot(111)
         wedges, texts, autotexts = ax.pie(dados, labels=labels, colors=cores, autopct='%1.1f%%', startangle=90)
-        # Mudar cores das labels para branco
+        
         for text in texts:
-            text.set_color('white')
+            text.set_color(COR_TEXTO)
             text.set_fontsize(11)
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_fontsize(10)
-        ax.set_title("Empréstimos: Ativos vs Inativos", fontsize=12, fontweight='bold', color='white')
+        ax.set_title("Ativos vs Inativos", fontsize=13, fontweight='bold', color=COR_TEXTO, pad=20)
 
         self._renderizar_grafico(fig)
 
@@ -173,35 +307,42 @@ class DashboardView(ctk.CTkFrame):
 
     def criar_barras_valores(self):
         """Gráfico de barras: Distribuição de valores de empréstimos."""
+        # Filtrar empréstimos
+        emprestimos = self.filtrar_emprestimos()
+        
         faixas = {
             "0-500": 0,
-            "500-1000": 0,
-            "1000-5000": 0,
-            "5000-10000": 0,
-            "10000+": 0
+            "500-1k": 0,
+            "1k-5k": 0,
+            "5k-10k": 0,
+            "10k+": 0
         }
 
-        for emp in self.database.emprestimos:
+        for emp in emprestimos:
             valor = getattr(emp, 'valor_emprestado', 0.0)
             if valor < 500:
                 faixas["0-500"] += 1
             elif valor < 1000:
-                faixas["500-1000"] += 1
+                faixas["500-1k"] += 1
             elif valor < 5000:
-                faixas["1000-5000"] += 1
+                faixas["1k-5k"] += 1
             elif valor < 10000:
-                faixas["5000-10000"] += 1
+                faixas["5k-10k"] += 1
             else:
-                faixas["10000+"] += 1
+                faixas["10k+"] += 1
 
-        fig = Figure(figsize=(10, 4), dpi=100, facecolor='#0b1220' if self._get_appearance() == "Dark" else "#ffffff")
+        fig = Figure(figsize=(10, 4), dpi=100, facecolor="#ffffff")
         ax = fig.add_subplot(111)
-        bars = ax.bar(faixas.keys(), faixas.values(), color=CHART_COLORS[:len(faixas)])
-        ax.set_ylabel("Quantidade de Empréstimos", color='white')
-        ax.set_xlabel("Faixa de Valor (R$)", color='white')
-        ax.set_title("Distribuição de Empréstimos por Faixa de Valor", fontsize=12, fontweight='bold', color='white')
-        ax.tick_params(axis='x', rotation=45, colors='white')
-        ax.tick_params(axis='y', colors='white')
+        
+        cores_barras = [COR_INFO, COR_SUCESSO, COR_ALERTA, COR_PERIGO, "#8b5cf6"]
+        bars = ax.bar(faixas.keys(), faixas.values(), color=cores_barras)
+        
+        ax.set_ylabel("Quantidade", color=COR_TEXTO, fontsize=11)
+        ax.set_xlabel("Faixa de Valor (R$)", color=COR_TEXTO, fontsize=11)
+        ax.set_title("Distribuição por Faixa de Valor", fontsize=13, fontweight='bold', 
+                    color=COR_TEXTO, pad=20)
+        ax.tick_params(axis='x', rotation=45, colors=COR_TEXTO)
+        ax.tick_params(axis='y', colors=COR_TEXTO)
 
         # Adicionar valores nas barras
         for bar in bars:
@@ -209,7 +350,7 @@ class DashboardView(ctk.CTkFrame):
             if height > 0:
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                        f'{int(height)}',
-                       ha='center', va='bottom', color='white', fontsize=9)
+                       ha='center', va='bottom', color=COR_TEXTO, fontsize=9, fontweight='bold')
 
         fig.tight_layout()
         self._renderizar_grafico(fig)
@@ -227,3 +368,49 @@ class DashboardView(ctk.CTkFrame):
             return ctk.get_appearance_mode()
         except:
             return "Light"
+    
+    def criar_cards_stats(self):
+        """Cria/atualiza os cards de estatísticas com filtro aplicado"""
+        # Limpar cards anteriores
+        for widget in self.stats_frame.winfo_children():
+            widget.destroy()
+        
+        # Filtrar empréstimos
+        emprestimos_filtrados = self.filtrar_emprestimos()
+        
+        if self.filtro_cliente == "todos":
+            clientes_unicos = set(e.cliente_id for e in emprestimos_filtrados)
+            total_clientes = len(clientes_unicos)
+        else:
+            total_clientes = 1
+        
+        # Calcular totais
+        total_emprestado = sum(getattr(e, 'valor_emprestado', 0.0) for e in emprestimos_filtrados)
+        total_owed = sum(getattr(e, 'saldo_devedor', 0.0) for e in emprestimos_filtrados)
+        total_paid = sum(
+            float(p.get('valor', 0.0))
+            for e in emprestimos_filtrados
+            for p in getattr(e, 'pagamentos', [])
+        )
+        
+        # Criar cards
+        def make_card(parent, title_text, value_text, icon=""):
+            card = ctk.CTkFrame(parent, corner_radius=12, fg_color=COR_CARD, 
+                              border_width=1, border_color=COR_BORDA)
+            card.pack(side="left", padx=8, fill="both", expand=True)
+            
+            title_label = ctk.CTkLabel(card, text=f"{icon} {title_text}", 
+                                      font=("Segoe UI", 11, "bold"), 
+                                      text_color=COR_TEXTO_SEC)
+            title_label.pack(pady=(12,6), padx=12)
+            
+            value_label = ctk.CTkLabel(card, text=value_text, 
+                                      font=("Segoe UI", 22, "bold"), 
+                                      text_color=COR_PRIMARIA)
+            value_label.pack(pady=(0,12), padx=12)
+            return card
+        
+        make_card(self.stats_frame, "Clientes", str(total_clientes), "👥")
+        make_card(self.stats_frame, "Total Emprestado", formatar_moeda(total_emprestado), "💰")
+        make_card(self.stats_frame, "Em Aberto", formatar_moeda(total_owed), "📊")
+        make_card(self.stats_frame, "Total Pago", formatar_moeda(total_paid), "✅")

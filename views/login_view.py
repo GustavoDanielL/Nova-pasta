@@ -3,6 +3,7 @@ from tkinter import messagebox
 from models.usuario import Usuario
 import threading
 import time
+from theme_colors import *
 
 class LoginView(ctk.CTkFrame):
     def __init__(self, parent, database, on_login_success):
@@ -20,40 +21,49 @@ class LoginView(ctk.CTkFrame):
             self.database.salvar_dados()
     
     def criar_widgets(self):
-        # Frame principal (use contrasting colors for light/dark themes)
-        # Light background for light mode, darker for dark mode
-        main_frame = ctk.CTkFrame(self, fg_color=("#ffffff", "#2b2b2b"))
-        # Fill both so widgets are centered and visible across window sizes
+        # Frame principal
+        main_frame = ctk.CTkFrame(self, fg_color=COR_FUNDO)
         main_frame.pack(expand=True, fill="both")
         
         # Título
         title = ctk.CTkLabel(main_frame, text="FinancePro", 
-                           font=("Arial", 32, "bold"))
+                           font=("Segoe UI", 32, "bold"),
+                           text_color=COR_PRIMARIA)
         title.pack(pady=20)
         
         subtitle = ctk.CTkLabel(main_frame, text="Sistema de Gestão de Empréstimos",
-                              font=("Arial", 16))
+                              font=("Segoe UI", 16),
+                              text_color=COR_TEXTO_SEC)
         subtitle.pack(pady=5)
         
-        # Frame do formulário (contrasting panel)
-        form_frame = ctk.CTkFrame(main_frame, width=400, fg_color=("#f7f7f7", "#3a3a3a"))
+        # Frame do formulário
+        form_frame = ctk.CTkFrame(main_frame, width=400, fg_color=COR_CARD,
+                                 border_width=2, border_color=COR_BORDA)
         form_frame.pack(pady=40, padx=20)
         
         # Campos de login
-        ctk.CTkLabel(form_frame, text="Usuário:", font=("Arial", 14)).pack(pady=10)
-        self.entry_usuario = ctk.CTkEntry(form_frame, width=300, height=40)
+        ctk.CTkLabel(form_frame, text="Usuário:", font=("Segoe UI", 14),
+                    text_color=COR_TEXTO).pack(pady=10)
+        self.entry_usuario = ctk.CTkEntry(form_frame, width=300, height=40,
+                                         font=("Segoe UI", 12),
+                                         border_color=COR_BORDA)
         self.entry_usuario.pack(pady=10)
         self.entry_usuario.insert(0, "admin")
         
-        ctk.CTkLabel(form_frame, text="Senha:", font=("Arial", 14)).pack(pady=10)
-        self.entry_senha = ctk.CTkEntry(form_frame, width=300, height=40, show="•")
+        ctk.CTkLabel(form_frame, text="Senha:", font=("Segoe UI", 14),
+                    text_color=COR_TEXTO).pack(pady=10)
+        self.entry_senha = ctk.CTkEntry(form_frame, width=300, height=40, show="•",
+                                       font=("Segoe UI", 12),
+                                       border_color=COR_BORDA)
         self.entry_senha.pack(pady=10)
         self.entry_senha.insert(0, "admin123")
         
         # Botão de login
         btn_login = ctk.CTkButton(form_frame, text="Entrar", 
                                 command=self.fazer_login,
-                                height=45, font=("Arial", 16))
+                                height=45, font=("Segoe UI", 16, "bold"),
+                                fg_color=COR_PRIMARIA,
+                                hover_color=COR_SECUNDARIA)
         btn_login.pack(pady=20)
         
         # Bind Enter para login
@@ -67,47 +77,24 @@ class LoginView(ctk.CTkFrame):
             messagebox.showerror("Erro", "Preencha todos os campos!")
             return
         
-        # Desabilitar botão e mostrar loading
-        btn_login = None
-        for widget in self.winfo_children():
-            for child in widget.winfo_children() if hasattr(widget, 'winfo_children') else []:
-                if isinstance(child, ctk.CTkButton) and "Entrar" in child.cget("text"):
-                    btn_login = child
-                    break
+        # Verificar credenciais diretamente (sem thread - fix para Linux)
+        for user in self.database.usuarios:
+            if user.usuario == usuario:
+                # Use verify_password to detect legacy plain-text entries that need re-hash
+                ok, rehash = Usuario.verify_password(user.senha, senha)
+                if ok:
+                    # If password was plain-text, re-hash and persist
+                    if rehash:
+                        try:
+                            user.senha = Usuario.hash_password(senha)
+                            self.database.salvar_dados()
+                        except Exception:
+                            pass
+                    
+                    # Sucesso - chamar callback diretamente
+                    self.on_login_success()
+                    return
         
-        if btn_login:
-            btn_login.configure(state="disabled", text="🔄 Autenticando...")
-            self.update()
-        
-        # Executar login em thread para não bloquear UI
-        def fazer_login_async():
-            try:
-                for user in self.database.usuarios:
-                    if user.usuario == usuario:
-                        # Use verify_password to detect legacy plain-text entries that need re-hash
-                        ok, rehash = Usuario.verify_password(user.senha, senha)
-                        if ok:
-                            # If password was plain-text, re-hash and persist
-                            if rehash:
-                                try:
-                                    user.senha = Usuario.hash_password(senha)
-                                    self.database.salvar_dados()
-                                except Exception:
-                                    pass
-                            
-                            # Sucesso - chamar callback
-                            self.after(500, self.on_login_success)
-                            return
-                
-                # Falha
-                self.after(0, lambda: messagebox.showerror("Erro", "Usuário ou senha incorretos!"))
-            except Exception as e:
-                self.after(0, lambda: messagebox.showerror("Erro", f"Erro durante autenticação: {e}"))
-            finally:
-                if btn_login:
-                    self.after(0, lambda: btn_login.configure(state="normal", text="Entrar"))
-        
-        # Iniciar thread de login
-        login_thread = threading.Thread(target=fazer_login_async, daemon=True)
-        login_thread.start()
+        # Falha
+        messagebox.showerror("Erro", "Usuário ou senha incorretos!")
         

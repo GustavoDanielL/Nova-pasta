@@ -4,10 +4,10 @@ from pathlib import Path
 import csv
 from datetime import datetime
 from utils.calculos import formatar_moeda
-from config import *
+from theme_colors import *
 
-CARD_BG = ("#ffffff", "#071018")
-ACCENT = "#ef4444"
+CARD_BG = COR_CARD
+ACCENT = COR_PERIGO
 
 class NotificacoesView(ctk.CTkFrame):
     def __init__(self, parent, database):
@@ -21,7 +21,7 @@ class NotificacoesView(ctk.CTkFrame):
         header_frame.pack(pady=(16,12), padx=20, fill="x")
         
         title = ctk.CTkLabel(header_frame, text="🔔 Notificações e Alertas", 
-                           font=FONT_TITLE, text_color=COLOR_TEXT_PRIMARY)
+                           font=("Segoe UI", 24, "bold"), text_color=COR_TEXTO)
         title.pack(side="left")
         
         # Botões de ação
@@ -29,18 +29,19 @@ class NotificacoesView(ctk.CTkFrame):
         btn_frame.pack(side="right")
         
         ctk.CTkButton(btn_frame, text="🔄 Atualizar", width=100, height=32,
-                     fg_color=COLOR_INFO, font=FONT_SMALL,
+                     fg_color=COR_INFO, font=("Segoe UI", 11),
+                     hover_color=COR_SECUNDARIA,
                      command=self.atualizar_lista).pack(side="left", padx=4)
         
         ctk.CTkButton(btn_frame, text="🗑️ Limpar", width=100, height=32,
-                     fg_color=COLOR_DANGER, font=FONT_SMALL,
+                     fg_color=COR_PERIGO, font=("Segoe UI", 11),
                      command=self.limpar).pack(side="left", padx=4)
 
         # Frame principal scrollable
         self.scroll_frame = ctk.CTkScrollableFrame(self, corner_radius=12, 
                                                    fg_color=CARD_BG,
-                                                   border_width=1,
-                                                   border_color=COLOR_BORDER_LIGHT)
+                                                   border_width=2,
+                                                   border_color=COR_BORDA)
         self.scroll_frame.pack(pady=12, padx=20, fill="both", expand=True)
 
         self.atualizar_lista()
@@ -63,7 +64,7 @@ class NotificacoesView(ctk.CTkFrame):
         if atrasados:
             # Seção de atrasados
             secao = ctk.CTkLabel(self.scroll_frame, text="⚠️ Empréstimos Atrasados", 
-                               font=FONT_HEADING, text_color=COLOR_DANGER)
+                               font=("Segoe UI", 16, "bold"), text_color=COR_PERIGO)
             secao.pack(anchor="w", padx=16, pady=(16, 8))
             
             for emp in atrasados:
@@ -73,8 +74,8 @@ class NotificacoesView(ctk.CTkFrame):
                 
                 # Card de notificação
                 card = ctk.CTkFrame(self.scroll_frame, corner_radius=8, 
-                                   fg_color=("#fff5f5", "#2a1515"),
-                                   border_width=1, border_color=COLOR_DANGER)
+                                   fg_color="#fef2f2",
+                                   border_width=2, border_color=COR_PERIGO)
                 card.pack(fill="x", padx=16, pady=6)
                 
                 # Conteúdo
@@ -82,17 +83,17 @@ class NotificacoesView(ctk.CTkFrame):
                 content_frame.pack(fill="x", padx=12, pady=12)
                 
                 ctk.CTkLabel(content_frame, text=f"🔴 Cliente: {nome}", 
-                           font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY,
+                           font=("Segoe UI", 13, "bold"), text_color=COR_TEXTO,
                            anchor="w").pack(anchor="w")
                 
                 ctk.CTkLabel(content_frame, 
                            text=f"ID: {emp.id} | Saldo Devedor: {formatar_moeda(emp.saldo_devedor)}", 
-                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           font=("Segoe UI", 11), text_color=COR_TEXTO_SEC,
                            anchor="w").pack(anchor="w", pady=(4,0))
                 
                 data_str = emp.data_emprestimo[:10] if hasattr(emp, 'data_emprestimo') else "---"
                 ctk.CTkLabel(content_frame, text=f"Data: {data_str}", 
-                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           font=("Segoe UI", 10), text_color=COR_TEXTO_SEC,
                            anchor="w").pack(anchor="w", pady=(2,0))
         
         # Lembretes genéricos
@@ -100,7 +101,7 @@ class NotificacoesView(ctk.CTkFrame):
         
         if lembretes:
             secao = ctk.CTkLabel(self.scroll_frame, text="📝 Lembretes", 
-                               font=FONT_HEADING, text_color=COLOR_INFO)
+                               font=("Segoe UI", 16, "bold"), text_color=COR_INFO)
             secao.pack(anchor="w", padx=16, pady=(16, 8))
             
             for lemb in lembretes:
@@ -110,23 +111,23 @@ class NotificacoesView(ctk.CTkFrame):
                 data = lemb.get('data', '---')
                 
                 card = ctk.CTkFrame(self.scroll_frame, corner_radius=8, 
-                                   fg_color=("#f0f9ff", "#0f1f2a"),
-                                   border_width=1, border_color=COLOR_INFO)
+                                   fg_color="#f0f9ff",
+                                   border_width=2, border_color=COR_INFO)
                 card.pack(fill="x", padx=16, pady=6)
                 
                 content_frame = ctk.CTkFrame(card, fg_color="transparent")
                 content_frame.pack(fill="x", padx=12, pady=12)
                 
                 ctk.CTkLabel(content_frame, text=f"📌 {tipo}", 
-                           font=FONT_NORMAL, text_color=COLOR_TEXT_PRIMARY,
+                           font=("Segoe UI", 13, "bold"), text_color=COR_TEXTO,
                            anchor="w").pack(anchor="w")
                 
                 ctk.CTkLabel(content_frame, text=msg, 
-                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           font=("Segoe UI", 11), text_color=COR_TEXTO_SEC,
                            anchor="w").pack(anchor="w", pady=(4,0))
                 
                 ctk.CTkLabel(content_frame, text=f"Data: {data}", 
-                           font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
+                           font=("Segoe UI", 10), text_color=COR_TEXTO_SEC,
                            anchor="w").pack(anchor="w", pady=(2,0))
         
         # Se não há notificações
@@ -134,16 +135,16 @@ class NotificacoesView(ctk.CTkFrame):
             empty_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
             empty_frame.pack(expand=True, pady=50)
             
-            ctk.CTkLabel(empty_frame, text="✅", font=("Arial", 48)).pack(pady=(0, 16))
+            ctk.CTkLabel(empty_frame, text="✅", font=("Segoe UI", 48)).pack(pady=(0, 16))
             ctk.CTkLabel(empty_frame, text="Nenhuma notificação pendente", 
-                        font=FONT_SUBTITLE, text_color=COLOR_TEXT_SECONDARY).pack()
+                        font=("Segoe UI", 16), text_color=COR_TEXTO_SEC).pack()
             ctk.CTkLabel(empty_frame, text="Tudo em ordem!", 
-                        font=FONT_NORMAL, text_color=COLOR_SUCCESS).pack(pady=(8,0))
+                        font=("Segoe UI", 13), text_color=COR_SUCESSO).pack(pady=(8,0))
 
     def limpar(self):
         self.database.lembretes = []
         self.database.salvar_dados()
-        self.atualizar_tabela()
+        self.atualizar_lista()
 
     def exportar_csv(self):
         try:
