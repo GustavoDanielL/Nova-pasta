@@ -16,9 +16,12 @@ class DashboardView(ctk.CTkFrame):
         self.criar_widgets()
     
     def criar_widgets(self):
-        # Header com título e filtros
-        header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.pack(pady=(16,12), padx=20, fill="x")
+        print("[DEBUG] Dashboard: Iniciando criação de widgets")
+        try:
+            # Header com título e filtros
+            header_frame = ctk.CTkFrame(self, fg_color="transparent")
+            header_frame.pack(pady=(16,12), padx=20, fill="x")
+            print("[DEBUG] Dashboard: Header criado")
         
         title = ctk.CTkLabel(header_frame, text="📊 Dashboard", font=FONT_TITLE, text_color=COLOR_TEXT_PRIMARY)
         title.pack(side="left")
@@ -117,6 +120,12 @@ class DashboardView(ctk.CTkFrame):
                 ctk.CTkLabel(content, text=info_text, 
                            font=FONT_SMALL, text_color=COLOR_TEXT_SECONDARY,
                            anchor="w").pack(anchor="w", pady=(4,0))
+            
+            print("[DEBUG] Dashboard: Widgets criados com sucesso")
+        except Exception as e:
+            print(f"[DEBUG] Dashboard: ERRO ao criar widgets: {e}")
+            import traceback
+            traceback.print_exc()
     
     def filtrar_emprestimos(self):
         """Filtra empréstimos baseado no período selecionado."""
@@ -139,8 +148,15 @@ class DashboardView(ctk.CTkFrame):
     
     def aplicar_filtro_periodo(self, periodo):
         """Aplica filtro de período e atualiza dashboard."""
-        self.filtro_periodo = periodo
-        # Recriar widgets com novo filtro
-        for widget in self.winfo_children():
-            widget.destroy()
-        self.criar_widgets()
+        print(f"[DEBUG] Dashboard: Aplicando filtro {periodo}")
+        try:
+            self.filtro_periodo = periodo
+            # Recriar widgets com novo filtro
+            for widget in self.winfo_children():
+                widget.destroy()
+            self.criar_widgets()
+            print("[DEBUG] Dashboard: Filtro aplicado com sucesso")
+        except Exception as e:
+            print(f"[DEBUG] Dashboard: ERRO ao aplicar filtro: {e}")
+            import traceback
+            traceback.print_exc()

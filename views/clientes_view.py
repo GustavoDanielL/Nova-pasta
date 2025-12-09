@@ -17,11 +17,13 @@ ACCENT = "#1abc9c"
 
 class ClientesView(ctk.CTkFrame):
     def __init__(self, parent, database):
+        print("[DEBUG] ClientesView: Inicializando")
         super().__init__(parent)
         self.database = database
         self.pack(fill="both", expand=True)
         self.criar_widgets()
         self.atualizar_lista()
+        print("[DEBUG] ClientesView: Inicializado com sucesso")
     
     def criar_widgets(self):
         # Frame superior (busca e botões)
