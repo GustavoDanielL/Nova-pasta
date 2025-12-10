@@ -72,14 +72,13 @@ class MainView:
         
         # Se a view já existe no cache e é a mesma que queremos, apenas re-empacota
         if view_name in self.view_cache:
+            print(f"[CACHE] Reutilizando {view_name} do cache (instantâneo)")
             self.view_cache[view_name].pack(fill="both", expand=True)
             self.current_view = view_name
-            # Atualizar dados se necessário
-            if hasattr(self.view_cache[view_name], 'atualizar_lista'):
-                self.view_cache[view_name].atualizar_lista()
-            elif hasattr(self.view_cache[view_name], 'atualizar_tabela'):
-                self.view_cache[view_name].atualizar_tabela()
+            # NÃO atualizar dados automaticamente - só quando necessário
+            # Isso evita re-renderização pesada toda vez
         else:
+            print(f"[CACHE] Primeira carga de {view_name}")
             # Carregar a view pela primeira vez
             module = __import__(module_path, fromlist=[view_class])
             view_cls = getattr(module, view_class)

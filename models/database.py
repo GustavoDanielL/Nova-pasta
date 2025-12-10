@@ -9,8 +9,25 @@ from datetime import datetime, date
 
 class Database:
     def __init__(self):
-        self.data_dir = Path("data")
-        self.data_dir.mkdir(exist_ok=True)
+        # Criar pasta FinancePro em Documentos do usuário
+        if os.name == 'nt':  # Windows
+            documentos = Path.home() / "Documents" / "FinancePro"
+        else:  # Linux/Mac
+            documentos = Path.home() / "Documentos" / "FinancePro"
+        
+        # Se não existir, criar e copiar dados existentes
+        if not documentos.exists():
+            documentos.mkdir(parents=True, exist_ok=True)
+            # Copiar dados existentes da pasta data/ se existir
+            old_data = Path("data")
+            if old_data.exists():
+                for arquivo in old_data.glob("*.json"):
+                    try:
+                        shutil.copy2(arquivo, documentos / arquivo.name)
+                    except:
+                        pass
+        
+        self.data_dir = documentos
         
         self.arquivos = {
             'clientes': self.data_dir / "clientes.json",
@@ -77,15 +94,7 @@ class Database:
                 elif key == 'lembretes':
                     dados = self.lembretes
 
-                # Antes de sobrescrever, salvar backup do arquivo existente
-                if arquivo.exists():
-                    ts = datetime.now().strftime('%Y%m%d%H%M%S')
-                    backup_path = backup_dir / f"{arquivo.stem}_{ts}.json"
-                    try:
-                        shutil.copy2(str(arquivo), str(backup_path))
-                    except Exception:
-                        pass
-
+                # Backup removido - agora só manual via menu
                 with open(arquivo, 'w', encoding='utf-8') as f:
                     json.dump(dados, f, indent=2, ensure_ascii=False)
 

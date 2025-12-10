@@ -50,29 +50,64 @@ class ClientesView(ctk.CTkFrame):
         self.lista_frame = ctk.CTkScrollableFrame(main_frame, corner_radius=12, fg_color="transparent")
         self.lista_frame.pack(fill="both", expand=True, padx=12, pady=12)
     
-    def atualizar_lista(self, clientes=None):
+    def atualizar_lista(self, clientes=None, forcar=False):
+        # Se já foi carregado e não é forçado, não fazer nada
+        if hasattr(self, '_lista_carregada') and self._lista_carregada and not forcar:
+            return
+        
         # Limpar lista atual
         for widget in self.lista_frame.winfo_children():
             widget.destroy()
         
         clientes = clientes or self.database.clientes
+        self._lista_carregada = True
         
         if not clientes:
             label = ctk.CTkLabel(self.lista_frame, text="Nenhum cliente cadastrado")
             label.pack(pady=20)
             return
         
-        # Cabeçalho
-        header_frame = ctk.CTkFrame(self.lista_frame, fg_color="transparent")
-        header_frame.pack(fill="x", pady=6, padx=6)
+        # Cabeçalho profissional
+        header_frame = ctk.CTkFrame(self.lista_frame, fg_color=COR_PRIMARIA, corner_radius=8)
+        header_frame.pack(fill="x", pady=(0, 8), padx=6)
         
-        headers = ["", "Nome", "CPF/CNPJ", "Telefone", "Status", "Ações"]
-        for i, header in enumerate(headers):
-            label = ctk.CTkLabel(header_frame, text=header, font=("Segoe UI", 12, "bold"),
-                               text_color=COR_TEXTO)
-            label.grid(row=0, column=i, padx=8, pady=5, sticky="w")
-            if i > 0:
-                header_frame.grid_columnconfigure(i, weight=1)
+        headers = [
+            ("", 0),
+            ("Nome", 1),
+            ("CPF/CNPJ", 2),
+            ("Telefone", 3),
+            ("Status", 4)
+        ]
+        
+        for header_text, col in headers:
+            # Padx idêntico aos dados dos clientes
+            if col == 0:
+                padx_val = (12, 8)  # Badge
+            elif col == 1:
+                padx_val = 8  # Nome
+            elif col == 2:
+                padx_val = 8  # CPF/CNPJ
+            elif col == 3:
+                padx_val = 8  # Telefone
+            else:
+                padx_val = 8  # Status
+            
+            label = ctk.CTkLabel(header_frame, text=header_text, 
+                               font=("Segoe UI", 13, "bold"),
+                               text_color="#ffffff")
+            label.grid(row=0, column=col, padx=padx_val, pady=10, sticky="w")
+        
+        # Configurar pesos das colunas do cabeçalho (idêntico aos dados)
+        header_frame.grid_columnconfigure(0, weight=0)  # Badge - largura fixa
+        header_frame.grid_columnconfigure(1, weight=2)  # Nome - mais espaço
+        header_frame.grid_columnconfigure(2, weight=1)  # CPF/CNPJ
+        header_frame.grid_columnconfigure(3, weight=1)  # Telefone
+        header_frame.grid_columnconfigure(4, weight=1)  # Status
+        
+        # Label de ações no cabeçalho (alinhado com os botões)
+        ctk.CTkLabel(header_frame, text="Ações", 
+                    font=("Segoe UI", 13, "bold"),
+                    text_color="#ffffff").grid(row=0, column=5, columnspan=4, padx=(3, 8), pady=10, sticky="w")
         
         # Cache de empréstimos por cliente (otimização)
         self.emprestimos_cache = {}
@@ -90,77 +125,81 @@ class ClientesView(ctk.CTkFrame):
         emprestimos_cliente = self.emprestimos_cache.get(cliente.id, [])
         emprestimos_ativos = [e for e in emprestimos_cliente if e.ativo and e.saldo_devedor > 0]
         
-        # Definir badge profissional
-        if not emprestimos_cliente:
-            badge_text = ""
-            badge_color = COR_BORDA
-            status_text = "Sem empréstimos"
-        elif emprestimos_ativos:
+        # Status visual
+        if emprestimos_ativos:
             total_devido = sum(e.saldo_devedor for e in emprestimos_ativos)
-            badge_text = "●"
             badge_color = COR_PERIGO
-            from utils.calculos import formatar_moeda
+            badge_icon = "●"
             status_text = f"Devendo {formatar_moeda(total_devido)}"
-        else:
-            badge_text = "✓"
+        elif emprestimos_cliente:
             badge_color = COR_SUCESSO
+            badge_icon = "✓"
             status_text = "Em dia"
+        else:
+            badge_color = COR_BORDA
+            badge_icon = "○"
+            status_text = "Sem empréstimos"
         
+        # Frame do cliente
         frame = ctk.CTkFrame(self.lista_frame, corner_radius=8, fg_color=COR_CARD,
-                            border_width=1, border_color=COR_BORDA)
-        frame.pack(fill="x", pady=4, padx=6)
+                            border_width=1, border_color=badge_color)
+        frame.pack(fill="x", pady=3, padx=6)
         
-        # Badge de status profissional
-        if badge_text:
-            badge_frame = ctk.CTkFrame(frame, fg_color=badge_color, width=8, height=30, corner_radius=4)
-            badge_frame.grid(row=0, column=0, padx=(8, 8), pady=8, sticky="ns")
-            badge_frame.grid_propagate(False)
+        # Badge de status
+        ctk.CTkLabel(frame, text=badge_icon, text_color=badge_color, 
+                    font=("Segoe UI", 16, "bold")).grid(
+                    row=0, column=0, padx=(12, 8), pady=10, sticky="w")
         
-        # Dados do cliente com status
-        dados = [
-            (cliente.nome, COR_TEXTO, ("Segoe UI", 12, "bold") if emprestimos_ativos else ("Segoe UI", 12)),
-            (cliente.cpf_cnpj, COR_TEXTO_SEC, ("Segoe UI", 11)),
-            (cliente.telefone, COR_TEXTO_SEC, ("Segoe UI", 11)),
-            (status_text, badge_color, ("Segoe UI", 10, "bold"))
-        ]
+        # Nome do cliente
+        ctk.CTkLabel(frame, text=cliente.nome, text_color=COR_TEXTO, 
+                    font=("Segoe UI", 13, "bold")).grid(
+                    row=0, column=1, padx=8, pady=10, sticky="w")
         
-        for i, (dado, cor, fonte) in enumerate(dados):
-            label = ctk.CTkLabel(frame, text=dado, text_color=cor, font=fonte)
-            label.grid(row=0, column=i+1, padx=8, pady=8, sticky="w")
-            frame.grid_columnconfigure(i+1, weight=1)
+        # CPF/CNPJ
+        ctk.CTkLabel(frame, text=cliente.cpf_cnpj, text_color=COR_TEXTO_SEC,
+                    font=("Segoe UI", 12)).grid(row=0, column=2, padx=8, pady=10, sticky="w")
         
-        # Botões de ação - OTIMIZADO com botões menores
-        btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        btn_frame.grid(row=0, column=6, padx=5, pady=5)
+        # Telefone
+        ctk.CTkLabel(frame, text=cliente.telefone, text_color=COR_TEXTO_SEC,
+                    font=("Segoe UI", 12)).grid(row=0, column=3, padx=8, pady=10, sticky="w")
         
-        # Botão compacto com menu
-        btn_info = ctk.CTkButton(btn_frame, text="👁️", width=35, height=28, corner_radius=6, 
-                                font=("Segoe UI", 11),
-                                fg_color=COLOR_BTN_INFO, hover_color=COLOR_BTN_INFO_HOVER,
-                                command=lambda: self.mostrar_info_cliente(cliente))
-        btn_info.pack(side="left", padx=2)
+        # Status textual
+        ctk.CTkLabel(frame, text=status_text, text_color=badge_color,
+                    font=("Segoe UI", 11, "bold")).grid(row=0, column=4, padx=8, pady=10, sticky="w")
         
-        btn_editar = ctk.CTkButton(btn_frame, text="✏️", width=35, height=28, corner_radius=6,
-                                  font=("Segoe UI", 11),
-                                  fg_color=COLOR_BTN_PRIMARY, hover_color=COLOR_BTN_PRIMARY_HOVER,
-                     command=lambda: self.editar_cliente(cliente))
-        btn_editar.pack(side="left", padx=2)
+        # Configurar pesos das colunas (idêntico ao cabeçalho)
+        frame.grid_columnconfigure(0, weight=0)  # Badge - largura fixa
+        frame.grid_columnconfigure(1, weight=2)  # Nome - mais espaço
+        frame.grid_columnconfigure(2, weight=1)  # CPF/CNPJ
+        frame.grid_columnconfigure(3, weight=1)  # Telefone
+        frame.grid_columnconfigure(4, weight=1)  # Status
         
-        btn_excluir = ctk.CTkButton(btn_frame, text="🗑️", width=35, height=28, corner_radius=6,
-                                   font=("Segoe UI", 11),
-                                   fg_color=COLOR_BTN_DANGER, hover_color=COLOR_BTN_DANGER_HOVER,
-                                   command=lambda: self.excluir_cliente(cliente))
-        btn_excluir.pack(side="left", padx=2)
+        # Botões de ação compactos (alinhados com cabeçalho 'Ações')
+        ctk.CTkButton(frame, text="👁️ Info", width=70, height=32, corner_radius=6,
+                     font=("Segoe UI", 11),
+                     fg_color=COLOR_BTN_INFO, hover_color=COLOR_BTN_INFO_HOVER,
+                     command=lambda: self.mostrar_info_cliente(cliente)).grid(
+                     row=0, column=5, padx=(3, 3), pady=10, sticky="w")
         
-        # Botão enviar cobrança (abre o cliente de e-mail com mensagem)
-        def enviar_cobranca_action():
-            self.enviar_cobranca(cliente)
-
-        btn_cobrar = ctk.CTkButton(btn_frame, text="📧 Cobrança", width=105, height=32, corner_radius=8,
-                                  font=FONT_SMALL,
-                                  fg_color=COLOR_BTN_WARNING, hover_color=COLOR_BTN_WARNING_HOVER,
-                                  command=enviar_cobranca_action)
-        btn_cobrar.pack(side="left", padx=2)
+        ctk.CTkButton(frame, text="✏️ Editar", width=75, height=32, corner_radius=6,
+                     font=("Segoe UI", 11),
+                     fg_color=COLOR_BTN_PRIMARY, hover_color=COLOR_BTN_PRIMARY_HOVER,
+                     command=lambda: self.editar_cliente(cliente)).grid(
+                     row=0, column=6, padx=3, pady=10, sticky="w")
+        
+        ctk.CTkButton(frame, text="🗑️ Excluir", width=80, height=32, corner_radius=6,
+                     font=("Segoe UI", 11),
+                     fg_color=COLOR_BTN_DANGER, hover_color=COLOR_BTN_DANGER_HOVER,
+                     command=lambda: self.excluir_cliente(cliente)).grid(
+                     row=0, column=7, padx=3, pady=10, sticky="w")
+        
+        # Botão de cobrança apenas se há dívida
+        if emprestimos_ativos:
+            ctk.CTkButton(frame, text="📧 Cobrar", width=85, height=32, corner_radius=6,
+                         font=("Segoe UI", 11),
+                         fg_color=COLOR_BTN_WARNING, hover_color=COLOR_BTN_WARNING_HOVER,
+                         command=lambda: self.enviar_cobranca(cliente)).grid(
+                         row=0, column=8, padx=(3, 8), pady=10, sticky="w")
     
     def buscar_cliente(self, event=None):
         termo = self.entry_busca.get().strip()
@@ -194,6 +233,8 @@ class ClientesView(ctk.CTkFrame):
                                  border_width=1, border_color=FRAME_BORDER)
         form_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
+        from utils.formatters import formatar_cpf_cnpj, formatar_telefone, limpar_formatacao
+        
         campos = [
             ("Nome Completo*", "entry_nome"),
             ("CPF/CNPJ*", "entry_cpf"),
@@ -201,21 +242,37 @@ class ClientesView(ctk.CTkFrame):
             ("E-mail*", "entry_email"),
             ("Endereço", "entry_endereco")
         ]
-        
-        # Register validation commands
-        vcmd_cpf = (self.register(validators.validate_integer), '%P')
-        vcmd_phone = (self.register(lambda s: s == '' or all(ch.isdigit() or ch in '+() -' for ch in s)), '%P')
 
         widgets = {}
         for i, (label, key) in enumerate(campos):
-            ctk.CTkLabel(form_frame, text=label).grid(row=i, column=0, sticky="w", pady=5)
-            entry = ctk.CTkEntry(form_frame, width=300)
-            # Apply simple masks/restrictions for CPF/CNPJ and phone
+            ctk.CTkLabel(form_frame, text=label, font=("Segoe UI", 12)).grid(
+                row=i, column=0, sticky="w", pady=8, padx=(20, 10))
+            entry = ctk.CTkEntry(form_frame, width=350, height=36, font=("Segoe UI", 11))
+            
+            # Adicionar formatação automática
             if key == 'entry_cpf':
-                entry.configure(validate='key', validatecommand=vcmd_cpf)
+                def on_cpf_change(event, e=entry):
+                    cursor_pos = e.index("insert")
+                    texto = e.get()
+                    formatado = formatar_cpf_cnpj(texto)
+                    if formatado != texto:
+                        e.delete(0, "end")
+                        e.insert(0, formatado)
+                        e.icursor(min(cursor_pos + (len(formatado) - len(texto)), len(formatado)))
+                entry.bind('<KeyRelease>', on_cpf_change)
+            
             if key == 'entry_telefone':
-                entry.configure(validate='key', validatecommand=vcmd_phone)
-            entry.grid(row=i, column=1, padx=10, pady=5, sticky="ew")
+                def on_phone_change(event, e=entry):
+                    cursor_pos = e.index("insert")
+                    texto = e.get()
+                    formatado = formatar_telefone(texto)
+                    if formatado != texto:
+                        e.delete(0, "end")
+                        e.insert(0, formatado)
+                        e.icursor(min(cursor_pos + (len(formatado) - len(texto)), len(formatado)))
+                entry.bind('<KeyRelease>', on_phone_change)
+            
+            entry.grid(row=i, column=1, padx=(10, 20), pady=8, sticky="ew")
             widgets[key] = entry
         
         # Preencher dados se editando

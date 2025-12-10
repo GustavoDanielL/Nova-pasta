@@ -169,12 +169,24 @@ class EmprestimosView(ctk.CTkFrame):
                                          font=("Segoe UI", 11), dropdown_font=("Segoe UI", 10), fg_color=COR_PRIMARIA)
         cliente_menu.pack(fill="x", padx=16, pady=(0,12))
 
-        # Valor - com label de exemplo
+        # Valor - com formatação automática
+        from utils.formatters import formatar_moeda_input, limpar_formatacao
+        
         ctk.CTkLabel(main_frame, text="💰 Valor do Empréstimo (R$):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Exemplo: 1000 ou 1500,50", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
-        vcmd_decimal = (self.register(validators.validate_decimal), '%P')
-        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="0.00", validate='key', validatecommand=vcmd_decimal, height=36, font=("Segoe UI", 11))
+        ctk.CTkLabel(main_frame, text="Digite apenas números - formatação automática", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        entry_valor = ctk.CTkEntry(main_frame, placeholder_text="0,00", height=36, font=("Segoe UI", 11))
         entry_valor.pack(fill="x", padx=16, pady=(0,12))
+        
+        def on_valor_change(event):
+            cursor_pos = entry_valor.index("insert")
+            texto = entry_valor.get()
+            # Remove tudo exceto números e vírgula
+            apenas_numeros = ''.join(c for c in texto if c.isdigit() or c == ',')
+            if apenas_numeros != texto:
+                entry_valor.delete(0, "end")
+                entry_valor.insert(0, apenas_numeros)
+        
+        entry_valor.bind('<KeyRelease>', on_valor_change)
 
         # Taxa - com slider visual
         ctk.CTkLabel(main_frame, text="📊 Taxa de Juros (% ao mês):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
@@ -189,11 +201,24 @@ class EmprestimosView(ctk.CTkFrame):
         entry_prazo = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Segoe UI", 11), width=100)
         entry_prazo.pack(anchor="w", padx=16, pady=(0,12))
 
-        # Data de Vencimento (nova)
+        # Data de Vencimento com formatação DD/MM/AAAA
+        from utils.formatters import formatar_data
+        
         ctk.CTkLabel(main_frame, text="📅 Data de Vencimento (opcional):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
-        ctk.CTkLabel(main_frame, text="Deixe em branco para calcular automaticamente (prazo em meses)", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
-        entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD (opcional)", height=36, font=("Segoe UI", 11))
+        ctk.CTkLabel(main_frame, text="Formato: DD/MM/AAAA - Deixe em branco para calcular automaticamente", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
+        entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="DD/MM/AAAA", height=36, font=("Segoe UI", 11))
         entry_data_venc.pack(fill="x", padx=16, pady=(0,16))
+        
+        def on_data_change(event):
+            cursor_pos = entry_data_venc.index("insert")
+            texto = entry_data_venc.get()
+            formatado = formatar_data(texto)
+            if formatado != texto:
+                entry_data_venc.delete(0, "end")
+                entry_data_venc.insert(0, formatado)
+                entry_data_venc.icursor(min(cursor_pos, len(formatado)))
+        
+        entry_data_venc.bind('<KeyRelease>', on_data_change)
 
         # Seção 2: Preview de cálculos
         preview_titulo = ctk.CTkLabel(main_frame, text="📈 Preview do Empréstimo", font=("Segoe UI", 14, "bold"), text_color=ACCENT)
@@ -282,14 +307,26 @@ class EmprestimosView(ctk.CTkFrame):
 
                 data_inicio = datetime.now().date().isoformat()
 
-                # Data de vencimento (opcional)
+                # Data de vencimento (opcional) - converter DD/MM/AAAA para YYYY-MM-DD
                 data_venc_str = entry_data_venc.get().strip()
                 if data_venc_str:
                     try:
-                        datetime.strptime(data_venc_str, "%Y-%m-%d")
-                        data_vencimento = data_venc_str
+                        # Tentar formato DD/MM/AAAA primeiro
+                        if '/' in data_venc_str:
+                            partes = data_venc_str.split('/')
+                            if len(partes) == 3:
+                                dia, mes, ano = partes
+                                data_vencimento = f"{ano}-{mes.zfill(2)}-{dia.zfill(2)}"
+                                # Validar data
+                                datetime.strptime(data_vencimento, "%Y-%m-%d")
+                            else:
+                                raise ValueError("Formato inválido")
+                        else:
+                            # Tentar formato YYYY-MM-DD
+                            datetime.strptime(data_venc_str, "%Y-%m-%d")
+                            data_vencimento = data_venc_str
                     except:
-                        messagebox.showerror("Erro", "Data de vencimento inválida. Use formato YYYY-MM-DD.")
+                        messagebox.showerror("Erro", "Data de vencimento inválida. Use formato DD/MM/AAAA.")
                         return
                 else:
                     data_vencimento = None  # Será calculado automaticamente no modelo

@@ -82,12 +82,11 @@ class NotificacoesView(ctk.CTkFrame):
                 card.pack(fill="x", padx=16, pady=4)
                 
                 # Conteúdo em um label único (mais rápido)
-                data_str = emp.data_emprestimo[:10] if hasattr(emp, 'data_emprestimo') else "---"
-                texto_completo = f"🔴 {nome} | ID: {emp.id} | Saldo: {formatar_moeda(emp.saldo_devedor)} | {data_str}"
-                
-                ctk.CTkLabel(card, text=texto_completo, 
+                # Label simplificado
+                ctk.CTkLabel(card, 
+                           text=f"🔴 {nome} | R$ {emp.saldo_devedor:.2f}", 
                            font=("Segoe UI", 11), text_color=COR_TEXTO,
-                           anchor="w").pack(anchor="w", padx=12, pady=8)
+                           anchor="w").pack(anchor="w", padx=10, pady=6)
         
         # Lembretes genéricos
         lembretes = self.database.lembretes if hasattr(self.database, 'lembretes') else []
@@ -99,20 +98,15 @@ class NotificacoesView(ctk.CTkFrame):
             
             for lemb in lembretes:
                 total_notif += 1
-                tipo = lemb.get('tipo', 'Info')
-                msg = lemb.get('mensagem', str(lemb))
-                data = lemb.get('data', '---')
                 
                 # Card simplificado
-                card = ctk.CTkFrame(self.scroll_frame, corner_radius=8, 
-                                   fg_color="#f0f9ff",
-                                   border_width=1, border_color=COR_INFO)
-                card.pack(fill="x", padx=16, pady=4)
+                card = ctk.CTkFrame(self.scroll_frame, corner_radius=6, 
+                                   fg_color="#f0f9ff", border_width=1, border_color=COR_INFO)
+                card.pack(fill="x", padx=16, pady=2)
                 
-                texto_completo = f"📌 {tipo} | {msg} | {data}"
-                ctk.CTkLabel(card, text=texto_completo, 
+                ctk.CTkLabel(card, text=f"📌 {lemb.get('mensagem', str(lemb))}", 
                            font=("Segoe UI", 11), text_color=COR_TEXTO,
-                           anchor="w").pack(anchor="w", padx=12, pady=8)
+                           anchor="w").pack(anchor="w", padx=10, pady=6)
         
         # Se não há notificações
         if total_notif == 0:
