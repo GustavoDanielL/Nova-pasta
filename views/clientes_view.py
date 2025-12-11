@@ -205,9 +205,9 @@ class ClientesView(ctk.CTkFrame):
         termo = self.entry_busca.get().strip()
         if termo:
             resultados = self.database.buscar_cliente(termo)
-            self.atualizar_lista(resultados)
+            self.atualizar_lista(resultados, forcar=True)
         else:
-            self.atualizar_lista()
+            self.atualizar_lista(forcar=True)
     
     def criar_cliente(self):
         self.janela_cliente(None)
@@ -220,13 +220,6 @@ class ClientesView(ctk.CTkFrame):
         janela.title("Novo Cliente" if not cliente else "Editar Cliente")
         janela.geometry("650x550")
         janela.configure(fg_color=COLOR_BG_LIGHT)
-        janela.transient(self)
-        # Wait for window to be visible before grabbing (fix for Linux)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass  # Ignore grab errors on some Linux systems
         
         # Formulário
         form_frame = ctk.CTkFrame(janela, fg_color=FRAME_BG, corner_radius=12,
@@ -316,7 +309,7 @@ class ClientesView(ctk.CTkFrame):
                 messagebox.showinfo("Sucesso", "Cliente cadastrado com sucesso!")
             
             self.database.salvar_dados()
-            self.atualizar_lista()
+            self.atualizar_lista(forcar=True)
             janela.destroy()
         
         btn_salvar = ctk.CTkButton(btn_frame, text="Salvar", command=salvar)
@@ -329,7 +322,7 @@ class ClientesView(ctk.CTkFrame):
         if messagebox.askyesno("Confirmar", f"Excluir cliente {cliente.nome}?"):
             self.database.clientes.remove(cliente)
             self.database.salvar_dados()
-            self.atualizar_lista()
+            self.atualizar_lista(forcar=True)
             messagebox.showinfo("Sucesso", "Cliente excluído com sucesso!")
 
     def mostrar_info_cliente(self, cliente):
@@ -337,13 +330,7 @@ class ClientesView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title(f"Informações - {cliente.nome}")
         janela.geometry("900x750")
-        janela.transient(self)
         janela.configure(fg_color=COLOR_BG_LIGHT)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass
 
         # Frame principal
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=FRAME_BG, 
@@ -519,12 +506,6 @@ class ClientesView(ctk.CTkFrame):
         janela.title(f"Cobrança - {cliente.nome}")
         janela.geometry("750x650")
         janela.configure(fg_color=COLOR_BG_LIGHT)
-        janela.transient(self)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass
 
         # Frame principal
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=FRAME_BG,

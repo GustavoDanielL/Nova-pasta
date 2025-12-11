@@ -7,9 +7,10 @@ CONTENT_BG = COR_CARD
 ACCENT = COR_PRIMARIA
 
 class MainView:
-    def __init__(self, root, database):
+    def __init__(self, root, database, license_manager=None):
         self.root = root
         self.database = database
+        self.license_manager = license_manager  # Adicionar license_manager
         self.view_cache = {}  # Cache para views já carregadas
         self.current_view = None
         
@@ -54,6 +55,14 @@ class MainView:
                               text_color=COR_TEXTO,
                               hover_color=COR_HOVER)
             btn.grid(row=i, column=0, padx=12, pady=6, sticky="ew")
+        
+        # Botão "Sobre" no final
+        btn_sobre = ctk.CTkButton(self.sidebar, text="ℹ️ Sobre", command=self.mostrar_sobre,
+                                 height=40, fg_color="transparent", anchor="w",
+                                 font=("Segoe UI", 12),
+                                 text_color=COR_TEXTO_SEC,
+                                 hover_color=COR_HOVER)
+        btn_sobre.grid(row=20, column=0, padx=12, pady=(6, 12), sticky="ew")
         
         # Frame principal
         self.main_frame = ctk.CTkFrame(self.root, corner_radius=12, fg_color=CONTENT_BG)
@@ -162,3 +171,200 @@ class MainView:
         self.root.after(200, carregar_emprestimos)
         self.root.after(300, carregar_notificacoes)
         self.root.after(400, lambda: print("[CACHE] Todas as views pré-carregadas!"))
+    
+    def mostrar_sobre(self):
+        """Mostra guia de uso do sistema"""
+        janela = ctk.CTkToplevel(self.root)
+        janela.title("Guia de Uso - FinancePro")
+        janela.geometry("900x700")
+        janela.transient(self.root)
+        
+        # Frame scrollable
+        scroll = ctk.CTkScrollableFrame(janela, fg_color=COR_FUNDO)
+        scroll.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # Título
+        ctk.CTkLabel(scroll, text="GUIA DE USO - FINANCEPRO", 
+                    font=("Segoe UI", 24, "bold"),
+                    text_color=COR_PRIMARIA).pack(pady=(0, 20))
+        
+        # Conteúdo do guia
+        guia = """
+1. CADASTRAR CLIENTE
+
+   Passo 1: Clique no botão verde "Novo Cliente" no topo da tela
+   Passo 2: Preencha todos os campos obrigatórios (marcados com *)
+   
+   - Nome Completo: Digite o nome do cliente
+   - CPF ou CNPJ: Digite apenas os números, a formatação é automática
+   - Telefone: Digite apenas os números, a formatação é automática
+   - Email: Digite o email completo
+   - Endereço: Campo opcional
+   
+   Passo 3: Clique em "Salvar"
+   
+   PRONTO! O cliente aparece na lista principal.
+
+
+2. CRIAR EMPRÉSTIMO
+
+   Passo 1: Clique em "Empréstimos" no menu lateral esquerdo
+   Passo 2: Clique no botão "Novo Empréstimo"
+   Passo 3: Preencha os dados:
+   
+   - Cliente: Selecione o cliente da lista
+   - Valor: Digite o valor do empréstimo (ex: 1000 ou 1500,50)
+   - Taxa de Juros: Digite a porcentagem (ex: 5 para 5% ao mês)
+   - Prazo: Digite quantos meses (ex: 12)
+   - Data Vencimento: Opcional, digite DD/MM/AAAA ou deixe em branco
+   
+   Passo 4: Clique em "Criar Empréstimo"
+   
+   PRONTO! O empréstimo foi criado e já calcula os juros automaticamente.
+
+
+3. REGISTRAR PAGAMENTO
+
+   Passo 1: Na lista de empréstimos, clique no botão "Detalhes"
+   Passo 2: Na janela que abrir, clique em "Adicionar Pagamento"
+   Passo 3: Digite o valor recebido
+   Passo 4: Digite a data do pagamento ou deixe em branco para usar hoje
+   Passo 5: Clique em "Registrar"
+   
+   O sistema atualiza o saldo devedor automaticamente.
+
+
+4. VER CLIENTES DEVEDORES
+
+   Passo 1: Clique em "Clientes" no menu lateral
+   
+   Os clientes aparecem com cores:
+   - Borda VERMELHA com círculo vermelho: Cliente devendo dinheiro
+   - Borda VERDE com check verde: Cliente em dia (sem dívidas)
+   - Borda CINZA com círculo vazio: Cliente sem empréstimos
+
+
+5. ENVIAR COBRANÇA
+
+   Passo 1: Na lista de clientes, procure cliente com borda vermelha
+   Passo 2: Clique no botão "Cobrar" (envelope)
+   
+   Isso abre seu programa de email com mensagem pronta para enviar.
+
+
+6. DASHBOARD (VISÃO GERAL)
+
+   Clique em "Dashboard" no menu lateral para ver:
+   
+   - Total emprestado
+   - Total a receber
+   - Empréstimos ativos
+   - Gráficos de desempenho
+   
+   Use os filtros no topo para ver por cliente ou período.
+
+
+7. NOTIFICAÇÕES
+
+   Clique em "Notificações" no menu lateral para ver:
+   
+   - Empréstimos atrasados (precisam cobrar)
+   - Lembretes importantes
+   
+   Lista mostra quem está devendo e quanto.
+
+
+8. EDITAR OU EXCLUIR
+
+   EDITAR CLIENTE:
+   - Vá em Clientes
+   - Clique no botão "Editar" (lápis)
+   - Altere o que precisar
+   - Clique em "Salvar"
+   
+   EXCLUIR CLIENTE:
+   - Vá em Clientes
+   - Clique no botão "Excluir" (lixeira)
+   - Confirme a exclusão
+   
+   ATENÇÃO: Não pode excluir cliente com empréstimos ativos!
+
+
+9. ONDE OS DADOS SÃO SALVOS
+
+   Todos os dados ficam salvos em:
+   
+   Windows: C:\\Users\\SeuNome\\Documents\\FinancePro
+   Linux: /home/seunome/Documentos/FinancePro
+   
+   IMPORTANTE: Faça backup dessa pasta regularmente!
+
+
+10. BACKUP MANUAL
+
+    Os dados são salvos automaticamente toda vez que você faz alguma alteração.
+    
+    Para fazer backup manualmente:
+    - Copie a pasta FinancePro de Documentos para um pendrive ou nuvem
+    
+    Para restaurar backup:
+    - Cole a pasta FinancePro de volta em Documentos
+
+
+DICAS IMPORTANTES:
+
+- Os campos de CPF, telefone e datas formatam sozinhos enquanto você digita
+- O sistema calcula juros compostos automaticamente
+- Clientes com empréstimos aparecem com cores diferentes
+- Use o botão Buscar para encontrar clientes rapidamente
+- O Dashboard mostra resumo de tudo
+
+
+PROBLEMAS COMUNS:
+
+Problema: "Não consigo cadastrar cliente"
+Solução: Certifique-se de preencher TODOS os campos obrigatórios (*)
+
+Problema: "Cliente não aparece na lista"
+Solução: Use a busca no topo ou role a lista para baixo
+
+Problema: "Empréstimo não foi criado"
+Solução: Verifique se o cliente existe antes de criar empréstimo
+
+Problema: "Perdi meus dados"
+Solução: Verifique a pasta Documentos/FinancePro
+           Se vazia, restaure do backup
+
+
+LOGIN E SENHA PADRÃO:
+
+Login: admin
+Senha: admin123
+
+(Digite exatamente assim, tudo minúsculo)
+
+
+SUPORTE:
+
+Em caso de dúvidas, entre em contato com o desenvolvedor.
+
+
+Versão: 1.0
+Sistema: FinancePro - Gestão de Empréstimos
+"""
+        
+        # Texto do guia
+        texto = ctk.CTkTextbox(scroll, width=800, height=500,
+                              font=("Courier New", 11),
+                              fg_color=COR_CARD,
+                              text_color=COR_TEXTO,
+                              wrap="word")
+        texto.pack(pady=10, fill="both", expand=True)
+        texto.insert("1.0", guia)
+        texto.configure(state="disabled")
+        
+        # Botão fechar
+        ctk.CTkButton(scroll, text="Fechar", command=janela.destroy,
+                     width=200, height=40,
+                     fg_color=COR_PRIMARIA,
+                     hover_color=COR_HOVER).pack(pady=20)

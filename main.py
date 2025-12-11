@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from views.login_view import LoginView
 from models.database import Database
+from license_manager import LicenseManager
+from tkinter import messagebox
 
 class App:
     def __init__(self):
@@ -9,6 +11,10 @@ class App:
             ctk.set_appearance_mode("Light")
             ctk.set_default_color_theme("blue")
             
+            # Inicializar gerenciador de licenças
+            self.license_manager = LicenseManager()
+            
+            # Inicializar database (cria pasta em Documentos)
             self.db = Database()
             self.db.carregar_dados()
             
@@ -19,8 +25,8 @@ class App:
             
             # Adicionar handler para fechar janela com segurança
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-            
-            self.login_view = LoginView(self.root, self.db, self.iniciar_sistema)
+            # Passar license_manager para login_view
+            self.login_view = LoginView(self.root, self.db, self.iniciar_sistema, self.license_manager)
         except Exception as e:
             print(f"Erro na inicialização: {e}")
             raise
@@ -87,7 +93,7 @@ class App:
             # Carregar MainView em background
             def carregar_views():
                 from views.main_view import MainView
-                self.main_view = MainView(self.root, self.db)
+                self.main_view = MainView(self.root, self.db, self.license_manager)
                 
                 # Pré-carregar e cachear as views principais
                 self.root.after(50, lambda: self.main_view.pre_carregar_views())

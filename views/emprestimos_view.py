@@ -146,12 +146,6 @@ class EmprestimosView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title("Novo Empréstimo")
         janela.geometry("620x750")
-        janela.transient(self)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass
 
         # Frame principal
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=COR_CARD, border_width=1, border_color=COR_BORDA)
@@ -376,12 +370,6 @@ class EmprestimosView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title(f"Registrar Pagamento - {emprestimo.id}")
         janela.geometry("550x400")
-        janela.transient(self)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass
 
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         main_frame.pack(fill="both", expand=True, padx=12, pady=12)
@@ -496,12 +484,6 @@ class EmprestimosView(ctk.CTkFrame):
         janela = ctk.CTkToplevel(self)
         janela.title(f"Empréstimo {emprestimo.id}")
         janela.geometry("800x700")
-        janela.transient(self)
-        janela.update_idletasks()
-        try:
-            janela.grab_set()
-        except Exception:
-            pass
 
         frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         frame.pack(fill="both", expand=True, padx=12, pady=12)

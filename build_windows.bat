@@ -32,6 +32,7 @@ pyinstaller --clean --noconfirm ^
     --icon=icon.ico ^
     --add-data="theme_colors.py;." ^
     --add-data="config.py;." ^
+    --add-data="license_config.py;." ^
     --hidden-import="PIL._tkinter_finder" ^
     --hidden-import="babel.numbers" ^
     --collect-all="customtkinter" ^
