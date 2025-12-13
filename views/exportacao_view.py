@@ -21,17 +21,18 @@ class ExportacaoView:
         self.parent = parent
         self.database = database
         self.exportando = False
+        self.main_frame = None
         
         self.criar_layout()
     
     def criar_layout(self):
         # Frame principal
-        main_frame = ctk.CTkFrame(self.parent, fg_color=CONTENT_BG)
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        self.main_frame = ctk.CTkFrame(self.parent, fg_color=CONTENT_BG)
+        self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
         # Título
         title = ctk.CTkLabel(
-            main_frame, 
+            self.main_frame, 
             text="📥 Exportar Dados",
             font=("Segoe UI", 24, "bold"),
             text_color=COR_TEXTO
@@ -40,7 +41,7 @@ class ExportacaoView:
         
         # Descrição
         desc = ctk.CTkLabel(
-            main_frame,
+            self.main_frame,
             text="Exporte seus dados financeiros em formato Excel com múltiplas opções de relatórios",
             font=("Segoe UI", 12),
             text_color=COR_TEXTO_SEC
@@ -48,7 +49,7 @@ class ExportacaoView:
         desc.pack(pady=(0, 30))
         
         # Frame de opções
-        opcoes_frame = ctk.CTkFrame(main_frame, corner_radius=8, fg_color=("#f0f0f0", "#1a2332"))
+        opcoes_frame = ctk.CTkFrame(self.main_frame, corner_radius=8, fg_color=("#f0f0f0", "#1a2332"))
         opcoes_frame.pack(fill="both", expand=True)
         
         # Opção 1: Relatório Completo
@@ -70,7 +71,7 @@ class ExportacaoView:
         )
         
         # Frame inferior com info
-        info_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        info_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         info_frame.pack(fill="x", pady=(20, 0))
         
         ctk.CTkLabel(
@@ -88,7 +89,7 @@ class ExportacaoView:
         ).pack()
         
         # Barra de progresso (oculta inicialmente)
-        self.progress_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        self.progress_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.progress_frame.pack(fill="x", pady=(20, 0))
         
         ctk.CTkLabel(
@@ -166,17 +167,15 @@ class ExportacaoView:
         
         self.exportando = True
         self.progress_frame.pack(fill="x", pady=(20, 0))
+        self.progress_bar.set(0.3)
         
         def thread_export():
             try:
-                self.progress_bar.set(0.3)
-                self.parent.after(0, self.parent.update)
-                
                 # Executar export
                 caminho = funcao_export()
                 
-                self.progress_bar.set(1.0)
-                self.parent.after(0, self.parent.update)
+                # Atualizar progresso
+                self.main_frame.after(0, lambda: self.progress_bar.set(1.0))
                 
                 # Sucesso
                 tamanho_kb = Path(caminho).stat().st_size / 1024
@@ -189,26 +188,25 @@ class ExportacaoView:
                         f"💾 {tamanho_kb:.1f} KB\n"
                         f"📍 {Path(caminho).parent}"
                     )
-                    
-                    # Abrir pasta (Windows)
-                    import subprocess
-                    try:
-                        subprocess.Popen(f'explorer /select,"{caminho}"')
-                    except:
-                        pass
                 
-                self.parent.after(0, mostrar_sucesso)
+                self.main_frame.after(0, mostrar_sucesso)
                 
             except Exception as e:
+                import traceback
+                erro_completo = traceback.format_exc()
+                print(f"Erro na exportação:\n{erro_completo}")
+                
                 def mostrar_erro():
                     messagebox.showerror("Erro na Exportação", f"Falha ao exportar:\n{str(e)}")
-                self.parent.after(0, mostrar_erro)
+                
+                self.main_frame.after(0, mostrar_erro)
             
             finally:
                 def limpar():
                     self.exportando = False
                     self.progress_frame.pack_forget()
-                self.parent.after(0, limpar)
+                
+                self.main_frame.after(0, limpar)
         
         # Executar em thread
         thread = threading.Thread(target=thread_export, daemon=True)

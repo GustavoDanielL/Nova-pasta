@@ -14,7 +14,7 @@ class Cliente:
         self.ativo = True
         
     def gerar_id(self):
-        return f"CLI{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return f"CLI{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
     
     def to_dict(self):
         return {

@@ -1,6 +1,21 @@
 # 💰 FinancePro - Sistema de Gestão de Empréstimos
 
-Um sistema moderno e profissional para gerenciar empréstimos e clientes, com recursos avançados de análise, notificações automáticas e exportação de dados.
+Um sistema moderno e profissional para gerenciar empréstimos e clientes, com **segurança de nível empresarial**, recursos avançados de análise, notificações automáticas e exportação de dados.
+
+## 🔐 Segurança e Privacidade (LGPD)
+
+### Criptografia AES-256
+- **Banco de Dados Criptografado**: Todos os dados são armazenados em SQLite com criptografia AES-256
+- **Senha Mestra**: Acesso protegido por senha mestra definida no primeiro uso
+- **Salt Único**: Cada instalação possui salt criptográfico único
+- **Dados Sensíveis Protegidos**: CPF, emails, telefones e valores são criptografados
+
+### Conformidade LGPD
+- ✅ Criptografia de dados pessoais em repouso
+- ✅ Controle de acesso com autenticação
+- ✅ Backups automáticos criptografados
+- ✅ Logs de auditoria de acesso
+- ✅ Destruição segura de dados ao remover
 
 ## 🎯 Características Principais
 
@@ -88,9 +103,11 @@ Exporte todos seus dados em planilhas Excel bem formatadas:
 - ✅ Cores por status (verde/amarelo/vermelho)
 - ✅ Colunas automaticamente ajustadas
 
-### 🔐 Autenticação
-- **Login Seguro**: Proteção com cadastro de usuários
-- **Recuperação de Dados**: Backup automático em JSON
+### 🔐 Autenticação e Segurança
+- **Senha Mestra**: Proteção do banco de dados com criptografia AES-256
+- **Login de Usuários**: Autenticação para múltiplos usuários
+- **Dados Criptografados**: Todos os dados sensíveis são criptografados
+- **Backups Automáticos**: Sistema de backup automático com criptografia
 
 ## 🚀 Instalação
 
@@ -121,12 +138,14 @@ python main.py
 customtkinter==5.2.1
 matplotlib==3.7.0
 openpyxl==3.10.0
+pycryptodome==3.19.0
 ```
 
 ### Descrição das Dependências:
 - **customtkinter**: Interface gráfica moderna e responsiva
 - **matplotlib**: Gráficos profissionais e interativos
 - **openpyxl**: Criação de planilhas Excel formatadas
+- **pycryptodome**: Criptografia AES-256 para proteção de dados
 
 ## 📂 Estrutura do Projeto
 
@@ -137,7 +156,7 @@ FinancePro/
 ├── README.md              # Este arquivo
 │
 ├── models/
-│   ├── database.py        # Camada de dados e persistência
+│   ├── database_sqlite.py # Banco SQLite com criptografia AES-256
 │   ├── cliente.py         # Modelo de Cliente
 │   ├── emprestimo.py      # Modelo de Empréstimo
 │   └── usuario.py         # Modelo de Usuário
@@ -161,19 +180,20 @@ FinancePro/
 │   └── qr_generator.py    # Geração de QR codes
 │
 └── data/
-    ├── clientes.json      # Dados dos clientes
-    ├── emprestimos.json   # Dados dos empréstimos
-    ├── usuarios.json      # Dados de usuários
-    ├── lembretes.json     # Lembretes e notificações
-    └── backups/           # Backups automáticos
+    ├── financepro.db      # Banco de dados SQLite criptografado
+    ├── .salt              # Salt para criptografia (único por instalação)
+    └── backups/           # Backups automáticos criptografados
 ```
 
 ## 💡 Como Usar
 
 ### Primeiro Acesso
 1. Execute `python main.py`
-2. Crie um novo usuário ou use credenciais de teste
-3. Você será redirecionado ao Dashboard
+2. **Defina uma Senha Mestra**: Esta senha protegerá todos os seus dados
+   - ⚠️ **IMPORTANTE**: Guarde esta senha em local seguro!
+   - Sem a senha, não será possível acessar os dados
+3. Crie um usuário administrador
+4. Você será redirecionado ao Dashboard
 
 ### Fluxo Básico
 

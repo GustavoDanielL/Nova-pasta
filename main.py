@@ -1,8 +1,17 @@
 import customtkinter as ctk
 from views.login_view import LoginView
-from models.database import Database
+from models.database_sqlite import DatabaseSQLite
 from license_manager import LicenseManager
+from utils.json_migrator import executar_migracao_automatica, verificar_migracao_necessaria
+from utils.master_password import solicitar_senha_mestra
+from utils.logger_config import configurar_logging, log_operacao
 from tkinter import messagebox
+from pathlib import Path
+import logging
+import sys
+
+# Configurar logging
+logger = configurar_logging()
 
 class App:
     def __init__(self):
@@ -14,9 +23,32 @@ class App:
             # Inicializar gerenciador de licenças
             self.license_manager = LicenseManager()
             
-            # Inicializar database (cria pasta em Documentos)
-            self.db = Database()
-            self.db.carregar_dados()
+            # Diretório de dados
+            data_dir = Path.home() / "Documentos" / "FinancePro"
+            config_dir = Path.home() / ".config" / "FinancePro"
+            
+            # TEMPORÁRIO: Senha mestra desabilitada para teste
+            senha_mestra = None
+            
+            # TODO: Descomentar quando resolver problema de interface
+            # # Criar janela temporária para senha mestra
+            # temp_root = ctk.CTk()
+            # temp_root.withdraw()  # Esconder janela temporária
+            # # Solicitar senha mestra (ou None se cancelar/sem senha)
+            # senha_mestra = solicitar_senha_mestra(temp_root, config_dir)
+            # temp_root.destroy()
+            
+            # Verificar se precisa migrar JSON → SQLite
+            if verificar_migracao_necessaria(data_dir):
+                logger.info("Migração de JSON para SQLite necessária")
+                executar_migracao_automatica(data_dir, senha_mestra)
+            
+            # Inicializar database SQLite com criptografia
+            db_path = data_dir / "financepro.db"
+            self.db = DatabaseSQLite(db_path, senha_mestra)
+            
+            logger.info("Sistema inicializado com sucesso")
+            log_operacao(logger, "Inicialização", True, "Database carregado")
             
             self.root = ctk.CTk()
             self.root.title("Sistema de Empréstimos - FinancePro")
@@ -28,7 +60,8 @@ class App:
             # Passar license_manager para login_view
             self.login_view = LoginView(self.root, self.db, self.iniciar_sistema, self.license_manager)
         except Exception as e:
-            print(f"Erro na inicialização: {e}")
+            logger.error(f"Erro na inicialização: {e}", exc_info=True)
+            messagebox.showerror("Erro Crítico", f"Erro ao inicializar aplicativo:\n{e}")
             raise
     
     def on_closing(self):
@@ -40,12 +73,13 @@ class App:
             
             # Salvar dados
             self.db.salvar_dados()
+            logger.info("Aplicativo fechado com sucesso")
             
             # Fechar janela
             self.root.quit()
             self.root.destroy()
         except Exception as e:
-            print(f"Erro ao fechar: {e}")
+            logger.error(f"Erro ao fechar: {e}", exc_info=True)
             self.root.destroy()
         
     def mostrar_loading(self):
@@ -87,51 +121,54 @@ class App:
         try:
             self.login_view.destroy()
             
-            # Mostrar loading
-            self.mostrar_loading()
+            logger.info("Carregando MainView...")
+            from views.main_view import MainView
+            self.main_view = MainView(self.root, self.db, self.license_manager)
             
-            # Carregar MainView em background
-            def carregar_views():
-                from views.main_view import MainView
-                self.main_view = MainView(self.root, self.db, self.license_manager)
-                
-                # Pré-carregar e cachear as views principais
-                self.root.after(50, lambda: self.main_view.pre_carregar_views())
-                
-                # Esconder loading após tudo carregar
-                self.root.after(100, self.esconder_loading)
-                
-                self._notifier = None
-            
-            # Executar carregamento após pequeno delay
-            self.root.after(50, carregar_views)
+            self._notifier = None
+            logger.info("Sistema principal carregado")
             
         except Exception as e:
-            print(f"Erro ao iniciar sistema: {e}")
+            logger.error(f"Erro ao iniciar sistema: {e}", exc_info=True)
+            messagebox.showerror("Erro", f"Erro ao carregar sistema:\n{e}")
             raise
         
     def run(self):
         try:
             self.root.mainloop()
         except KeyboardInterrupt:
-            print("\nAplicativo interrompido pelo usuário")
+            logger.warning("Aplicativo interrompido pelo usuário")
         except Exception as e:
-            print(f"Erro durante execução: {e}")
+            logger.error(f"Erro durante execução: {e}", exc_info=True)
             raise
         finally:
             # Sempre salvar dados ao sair
             try:
                 self.db.salvar_dados()
-                print("Dados salvos com sucesso")
+                logger.info("Dados salvos ao sair")
             except Exception as e:
-                print(f"Erro ao salvar dados: {e}")
+                logger.error(f"Erro ao salvar dados: {e}", exc_info=True)
 
 if __name__ == "__main__":
     try:
+        print("=" * 60)
+        print("FinancePro - Sistema de Empréstimos")
+        print("=" * 60)
+        print("Inicializando aplicativo...")
+        print(f"Python: {sys.version}")
+        print(f"Diretório: {Path.cwd()}")
+        print("=" * 60)
+        
         app = App()
+        print("\n✓ App inicializado com sucesso!")
+        print("✓ Abrindo janela principal...\n")
         app.run()
     except Exception as e:
-        print(f"ERRO CRÍTICO: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.critical(f"ERRO CRÍTICO: {e}", exc_info=True)
+        print(f"\n{'=' * 60}")
+        print("✗ ERRO CRÍTICO")
+        print(f"{'=' * 60}")
+        print(f"{e}")
+        print(f"{'=' * 60}\n")
+        messagebox.showerror("Erro Crítico", f"O aplicativo encontrou um erro fatal:\n\n{e}\n\nVerifique os logs para mais detalhes.")
         input("Pressione Enter para sair...")

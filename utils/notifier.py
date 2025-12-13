@@ -7,10 +7,17 @@ import time
 from datetime import datetime, date
 import smtplib
 import ssl
-import json
+import os
+import logging
 from pathlib import Path
+from dotenv import load_dotenv
 
-CHECK_INTERVAL = 3600  # 1 hora em produção; mude para 60 segundos para testes
+logger = logging.getLogger(__name__)
+
+# Carregar variáveis de ambiente
+load_dotenv()
+
+CHECK_INTERVAL = 3600  # 1 hora em produção
 
 class Notifier:
     def __init__(self, database):
@@ -21,7 +28,7 @@ class Notifier:
     def start(self):
         if not self.thread.is_alive():
             self.thread.start()
-            print("[Notifier] Background thread started")
+            logger.info("Background thread do Notifier iniciado")
 
     def stop(self):
         self._stop.set()
@@ -60,61 +67,60 @@ class Notifier:
                         try:
                             self._send_notification_email(cliente, emp)
                         except Exception as e:
-                            print(f"[Notifier] Erro ao enviar email: {e}")
+                            logger.error(f"Erro ao enviar email: {e}")
                 
                 # Aguardar CHECK_INTERVAL segundos
                 time.sleep(CHECK_INTERVAL)
             except Exception as e:
-                print(f"[Notifier] Erro no loop: {e}")
+                logger.error(f"Erro no loop do notifier: {e}")
                 time.sleep(60)
 
     def _send_notification_email(self, cliente, emp):
-        """Envia notificação por email de atraso."""
+        """Envia notificação por email de atraso usando variáveis de ambiente."""
         if not cliente or not cliente.email:
             return
         
-        smtp_file = Path("data/smtp_config.json")
-        if not smtp_file.exists():
+        # Ler configurações do .env
+        host = os.getenv('SMTP_HOST')
+        port = int(os.getenv('SMTP_PORT', '587'))
+        username = os.getenv('SMTP_USERNAME')
+        password = os.getenv('SMTP_PASSWORD')
+        from_name = os.getenv('SMTP_FROM_NAME', 'FinancePro')
+        from_email = os.getenv('SMTP_FROM_EMAIL', username)
+        
+        # Verificar se está configurado
+        if not all([host, username, password]):
+            logger.warning("SMTP não configurado (.env incompleto)")
             return
         
         try:
-            cfg = json.loads(smtp_file.read_text(encoding='utf-8'))
-        except Exception:
-            return
-        
-        try:
-            subject = f"Notificação de Atraso - FinancePro (ID: {emp.id})"
+            subject = f"Notificação de Atraso - {from_name} (ID: {emp.id})"
             body = (
                 f"Prezado {cliente.nome},\n\n"
                 f"Este é um lembrete automático de que seu empréstimo está em atraso.\n\n"
                 f"ID do Empréstimo: {emp.id}\n"
                 f"Saldo Devedor: R$ {emp.saldo_devedor:.2f}\n"
-                f"Data de Início: {emp.data_inicio}\n\n"
+                f"Data de Início: {emp.data_emprestimo}\n\n"
                 f"Por favor, regularize o pagamento assim que possível.\n\n"
-                f"Atenciosamente,\nFinancePro"
+                f"Atenciosamente,\n{from_name}"
             )
             
-            message = f"From: {cfg.get('from_name')} <{cfg.get('username')}>\r\n"
+            message = f"From: {from_name} <{from_email}>\r\n"
             message += f"To: {cliente.email}\r\n"
             message += f"Subject: {subject}\r\n\r\n"
             message += body
-            
-            port = int(cfg.get('port', 587))
-            host = cfg.get('host')
-            username = cfg.get('username')
-            password = cfg.get('password')
             
             if port == 465:
                 context = ssl.create_default_context()
                 with smtplib.SMTP_SSL(host, port, context=context) as server:
                     server.login(username, password)
-                    server.sendmail(username, [cliente.email], message.encode('utf-8'))
+                    server.sendmail(from_email, [cliente.email], message.encode('utf-8'))
             else:
                 with smtplib.SMTP(host, port, timeout=10) as server:
                     server.starttls(context=ssl.create_default_context())
                     server.login(username, password)
-                    server.sendmail(username, [cliente.email], message.encode('utf-8'))
+                    server.sendmail(from_email, [cliente.email], message.encode('utf-8'))
             
-            print(f"[Notifier] Email enviado para {cliente.email}")
+            logger.info(f"Email enviado para {cliente.email}")
         except Exception as e:
-            print(f"[Notifier] Erro ao enviar email para {cliente.email}: {e}")
+            logger.error(f"Erro ao enviar email para {cliente.email}: {e}")

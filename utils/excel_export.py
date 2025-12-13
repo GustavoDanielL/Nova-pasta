@@ -278,7 +278,7 @@ def _criar_aba_emprestimos(wb, database):
         ws.cell(row, 7).value = emprestimo.saldo_devedor
         ws.cell(row, 8).value = total_pago
         ws.cell(row, 9).value = percentual_pago
-        ws.cell(row, 10).value = formatar_data_br(emprestimo.data_inicio)
+        ws.cell(row, 10).value = formatar_data_br(emprestimo.data_emprestimo)
         ws.cell(row, 11).value = status
         ws.cell(row, 12).value = "Sim" if emprestimo.ativo else "Não"
         
@@ -409,7 +409,7 @@ def exportar_apenas_emprestimos(database, caminho_saida=None):
         ws.cell(row, 9).value = total_pago
         ws.cell(row, 10).value = percentual_pago
         ws.cell(row, 11).value = proxima_parcela
-        ws.cell(row, 12).value = formatar_data_br(emprestimo.data_inicio)
+        ws.cell(row, 12).value = formatar_data_br(emprestimo.data_emprestimo)
         ws.cell(row, 13).value = status
         ws.cell(row, 14).value = ""
         

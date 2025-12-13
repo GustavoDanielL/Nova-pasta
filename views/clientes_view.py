@@ -21,6 +21,7 @@ class ClientesView(ctk.CTkFrame):
         super().__init__(parent)
         self.database = database
         self.pack(fill="both", expand=True)
+        self._busca_timer = None  # Timer para debounce da busca
         self.criar_widgets()
         # Carregar lista após um pequeno delay para não travar UI
         self.after(100, self.atualizar_lista)
@@ -202,6 +203,14 @@ class ClientesView(ctk.CTkFrame):
                          row=0, column=8, padx=(3, 8), pady=10, sticky="w")
     
     def buscar_cliente(self, event=None):
+        # Cancelar timer anterior se existir
+        if self._busca_timer:
+            self.after_cancel(self._busca_timer)
+        
+        # Agendar busca após 500ms (debounce)
+        self._busca_timer = self.after(500, self._executar_busca)
+    
+    def _executar_busca(self):
         termo = self.entry_busca.get().strip()
         if termo:
             resultados = self.database.buscar_cliente(termo)
@@ -216,9 +225,10 @@ class ClientesView(ctk.CTkFrame):
         self.janela_cliente(cliente)
     
     def janela_cliente(self, cliente=None):
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title("Novo Cliente" if not cliente else "Editar Cliente")
-        janela.geometry("650x550")
+        titulo = "Novo Cliente" if not cliente else "Editar Cliente"
+        configurar_janela_modal(janela, titulo, 650, 550, self)
         janela.configure(fg_color=COLOR_BG_LIGHT)
         
         # Formulário
@@ -327,9 +337,9 @@ class ClientesView(ctk.CTkFrame):
 
     def mostrar_info_cliente(self, cliente):
         """Abre uma janela mostrando detalhes do cliente, débitos e histórico de empréstimos."""
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title(f"Informações - {cliente.nome}")
-        janela.geometry("900x750")
+        configurar_janela_modal(janela, f"Informações - {cliente.nome}", 900, 750, self)
         janela.configure(fg_color=COLOR_BG_LIGHT)
 
         # Frame principal
@@ -502,9 +512,9 @@ class ClientesView(ctk.CTkFrame):
             return
 
         # Criar janela modal
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title(f"Cobrança - {cliente.nome}")
-        janela.geometry("750x650")
+        configurar_janela_modal(janela, f"Cobrança - {cliente.nome}", 750, 650, self)
         janela.configure(fg_color=COLOR_BG_LIGHT)
 
         # Frame principal

@@ -68,10 +68,11 @@ class EmprestimosView(ctk.CTkFrame):
         style.configure("inactive.Treeview", foreground="#95a5a6")  # Gray for inactive
         style.configure("overdue.Treeview", foreground="#e74c3c")  # Red for overdue
         
-        # Alternative: Use different font weight or style
-        self.tree.tag_configure("active", foreground="#27ae60")  # Green
-        self.tree.tag_configure("inactive", foreground="#95a5a6")  # Gray
-        self.tree.tag_configure("overdue", foreground="#e74c3c", font=("Segoe UI", 10, "bold"))  # Red and bold
+        # Configuração de cores por status
+        self.tree.tag_configure("active", foreground="#27ae60")  # Verde - Em dia
+        self.tree.tag_configure("inactive", foreground="#95a5a6")  # Cinza - Inativo
+        self.tree.tag_configure("overdue", foreground="#e74c3c", font=("Segoe UI", 10, "bold"))  # Vermelho negrito - Atrasado
+        self.tree.tag_configure("quitado", foreground="#10b981", font=("Segoe UI", 10, "bold"))  # Verde escuro negrito - Quitado
 
         # Action buttons frame
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -87,13 +88,8 @@ class EmprestimosView(ctk.CTkFrame):
         for item in self.tree.get_children():
             self.tree.delete(item)
         
-        # Get all emprestimos and overdue list
+        # Get all emprestimos
         emps = list(self.database.emprestimos)
-        try:
-            atrasados = self.database.get_overdue_emprestimos()
-            atrasados_ids = [e.id for e in atrasados]
-        except Exception:
-            atrasados_ids = []
         
         # Filter by client name search
         search_text = self.search_entry.get().strip().lower() if hasattr(self, 'search_entry') else ""
@@ -119,15 +115,17 @@ class EmprestimosView(ctk.CTkFrame):
                 valor_emprestado_text = f"R$ {valor_emprestado:.2f}"
                 saldo_text = f"R$ {saldo_devido:.2f}"
             
-            # Determine status text and tag (for coloring)
-            if emp.id in atrasados_ids:
-                status = "⚠️ ATRASADO"
+            # Usar o novo método get_status_badge() para determinar status
+            status = emp.get_status_badge()
+            
+            # Determinar tag para coloração
+            if emp.esta_quitado():
+                tag = "quitado"
+            elif emp.esta_atrasado():
                 tag = "overdue"
             elif emp.ativo:
-                status = "✓ Ativo"
                 tag = "active"
             else:
-                status = "✗ Inativo"
                 tag = "inactive"
             
             self.tree.insert("", "end", values=(emp.id, cliente_nome, valor_emprestado_text, saldo_text, status), tags=(tag,))
@@ -143,9 +141,9 @@ class EmprestimosView(ctk.CTkFrame):
             messagebox.showerror("Erro", "Nenhum cliente cadastrado.\nCadastre um cliente primeiro em 👥 Clientes.")
             return
 
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title("Novo Empréstimo")
-        janela.geometry("620x750")
+        configurar_janela_modal(janela, "Novo Empréstimo", 620, 750, self)
 
         # Frame principal
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color=COR_CARD, border_width=1, border_color=COR_BORDA)
@@ -195,24 +193,11 @@ class EmprestimosView(ctk.CTkFrame):
         entry_prazo = ctk.CTkEntry(main_frame, placeholder_text="0", validate='key', validatecommand=vcmd_int, height=36, font=("Segoe UI", 11), width=100)
         entry_prazo.pack(anchor="w", padx=16, pady=(0,12))
 
-        # Data de Vencimento com formatação DD/MM/AAAA
-        from utils.formatters import formatar_data
-        
+        # Data de Vencimento - sem formatação automática
         ctk.CTkLabel(main_frame, text="📅 Data de Vencimento (opcional):", font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=16, pady=(0,4))
         ctk.CTkLabel(main_frame, text="Formato: DD/MM/AAAA - Deixe em branco para calcular automaticamente", font=("Segoe UI", 9), text_color=("#999","#ccc")).pack(anchor="w", padx=16, pady=(0,6))
         entry_data_venc = ctk.CTkEntry(main_frame, placeholder_text="DD/MM/AAAA", height=36, font=("Segoe UI", 11))
         entry_data_venc.pack(fill="x", padx=16, pady=(0,16))
-        
-        def on_data_change(event):
-            cursor_pos = entry_data_venc.index("insert")
-            texto = entry_data_venc.get()
-            formatado = formatar_data(texto)
-            if formatado != texto:
-                entry_data_venc.delete(0, "end")
-                entry_data_venc.insert(0, formatado)
-                entry_data_venc.icursor(min(cursor_pos, len(formatado)))
-        
-        entry_data_venc.bind('<KeyRelease>', on_data_change)
 
         # Seção 2: Preview de cálculos
         preview_titulo = ctk.CTkLabel(main_frame, text="📈 Preview do Empréstimo", font=("Segoe UI", 14, "bold"), text_color=ACCENT)
@@ -326,7 +311,7 @@ class EmprestimosView(ctk.CTkFrame):
                     data_vencimento = None  # Será calculado automaticamente no modelo
 
                 # Criar empréstimo
-                novo = Emprestimo(cliente_id=cliente_id, valor_emprestado=valor, taxa_juros=taxa, data_inicio=data_inicio, prazo_meses=prazo, data_vencimento=data_vencimento)
+                novo = Emprestimo(cliente_id=cliente_id, valor_emprestado=valor, taxa_juros=taxa, data_emprestimo=data_inicio, prazo_meses=prazo, data_vencimento=data_vencimento)
                 self.database.adicionar_emprestimo(novo)
                 self.database.salvar_dados()
                 messagebox.showinfo("Sucesso", f"✓ Empréstimo criado!\n\nValor total: {formatar_moeda(novo.valor_total)}\nParcela: {formatar_moeda(novo.valor_parcela)}")
@@ -367,9 +352,9 @@ class EmprestimosView(ctk.CTkFrame):
             return
 
         # Modal de pagamento
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title(f"Registrar Pagamento - {emprestimo.id}")
-        janela.geometry("550x400")
+        configurar_janela_modal(janela, f"Registrar Pagamento - {emprestimo.id}", 550, 400, self)
 
         main_frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         main_frame.pack(fill="both", expand=True, padx=12, pady=12)
@@ -481,9 +466,9 @@ class EmprestimosView(ctk.CTkFrame):
             messagebox.showinfo("Aviso", "Este empréstimo já foi totalmente quitado!\nVocê pode visualizar os detalhes, mas não será possível registrar novos pagamentos.")
 
         # Modal detalhes do empréstimo
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self)
-        janela.title(f"Empréstimo {emprestimo.id}")
-        janela.geometry("800x700")
+        configurar_janela_modal(janela, f"Empréstimo {emprestimo.id}", 800, 700, self)
 
         frame = ctk.CTkFrame(janela, corner_radius=12, fg_color="#ffffff", border_width=1, border_color="#e5e7eb")
         frame.pack(fill="both", expand=True, padx=12, pady=12)

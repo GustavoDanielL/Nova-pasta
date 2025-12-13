@@ -2,25 +2,27 @@ from datetime import datetime, timedelta
 from utils.calculos import calcular_juros_compostos
 
 class Emprestimo:
-    def __init__(self, cliente_id, valor_emprestado, taxa_juros, data_inicio, prazo_meses, id=None, data_vencimento=None):
+    def __init__(self, cliente_id, valor_emprestado, taxa_juros, data_emprestimo, prazo_meses, id=None, data_vencimento=None, metodo_calculo='compostos'):
         self.id = id or self.gerar_id()
         self.cliente_id = cliente_id
         self.valor_emprestado = float(valor_emprestado)
         self.taxa_juros = float(taxa_juros) / 100  # Convertendo para decimal
-        self.data_inicio = data_inicio
+        self.data_emprestimo = data_emprestimo  # CORRIGIDO: era data_inicio
         self.prazo_meses = int(prazo_meses)
         self.data_vencimento = data_vencimento or self._calcular_data_vencimento()
         self.data_criacao = datetime.now().isoformat()
         self.ativo = True
         self.pagamentos = []
+        self.metodo_calculo = metodo_calculo
+        self.observacoes = ""
         
         # Calcular valores iniciais
         self.calcular_valores()
     
     def _calcular_data_vencimento(self):
-        """Calcula automaticamente a data de vencimento baseado na data de início e prazo."""
+        """Calcula automaticamente a data de vencimento baseado na data de empréstimo e prazo."""
         try:
-            data_inicio_obj = datetime.fromisoformat(self.data_inicio)
+            data_inicio_obj = datetime.fromisoformat(self.data_emprestimo)
             dias_total = self.prazo_meses * 30  # Aproximado: 30 dias por mês
             data_venc = data_inicio_obj + timedelta(days=dias_total)
             return data_venc.date().isoformat()
@@ -28,7 +30,7 @@ class Emprestimo:
             return None
         
     def gerar_id(self):
-        return f"EMP{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return f"EMP{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
     
     def calcular_valores(self):
         # Valor total com juros compostos
@@ -79,13 +81,51 @@ class Emprestimo:
         parcelas_pagas = len([p for p in self.pagamentos if p['tipo'] == 'Parcela'])
         return parcelas_pagas + 1 if parcelas_pagas < self.prazo_meses else None
     
+    def esta_quitado(self):
+        """Verifica se o empréstimo está quitado (saldo devedor zerado)"""
+        return self.saldo_devedor <= 0
+    
+    def esta_atrasado(self):
+        """Verifica se o empréstimo tem parcelas atrasadas"""
+        if self.esta_quitado():
+            return False
+        
+        try:
+            data_venc = datetime.fromisoformat(self.data_vencimento).date() if isinstance(self.data_vencimento, str) else self.data_vencimento
+            hoje = datetime.now().date()
+            return hoje > data_venc
+        except:
+            return False
+    
+    def dias_atraso(self):
+        """Retorna quantidade de dias de atraso (0 se não estiver atrasado)"""
+        if not self.esta_atrasado():
+            return 0
+        
+        try:
+            data_venc = datetime.fromisoformat(self.data_vencimento).date() if isinstance(self.data_vencimento, str) else self.data_vencimento
+            hoje = datetime.now().date()
+            return (hoje - data_venc).days
+        except:
+            return 0
+    
+    def get_status_badge(self):
+        """Retorna badge formatado com emoji e texto do status"""
+        if self.esta_quitado():
+            return "✅ QUITADO"
+        elif self.esta_atrasado():
+            dias = self.dias_atraso()
+            return f"⚠️ ATRASADO ({dias} dias)"
+        else:
+            return "🔄 EM DIA"
+    
     def to_dict(self):
         return {
             'id': self.id,
             'cliente_id': self.cliente_id,
             'valor_emprestado': self.valor_emprestado,
             'taxa_juros': self.taxa_juros,
-            'data_inicio': self.data_inicio,
+            'data_emprestimo': self.data_emprestimo,
             'prazo_meses': self.prazo_meses,
             'data_vencimento': self.data_vencimento,
             'data_criacao': self.data_criacao,
@@ -103,7 +143,7 @@ class Emprestimo:
             cliente_id=data['cliente_id'],
             valor_emprestado=data['valor_emprestado'],
             taxa_juros=data['taxa_juros'] * 100,  # Convertendo para percentual
-            data_inicio=data['data_inicio'],
+            data_emprestimo=data.get('data_emprestimo', data.get('data_inicio')),
             prazo_meses=data['prazo_meses'],
             id=data['id'],
             data_vencimento=data.get('data_vencimento')

@@ -13,7 +13,7 @@ class Usuario:
         self.ativo = True
 
     def gerar_id(self):
-        return f"USR{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return f"USR{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
 
     @staticmethod
     def hash_password(password, iterations=100000):

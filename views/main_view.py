@@ -73,27 +73,20 @@ class MainView:
     
     def limpar_main_frame(self):
         for widget in self.main_frame.winfo_children():
-            widget.pack_forget()  # Usar pack_forget ao invés de destroy para manter o cache
+            widget.destroy()  # TEMPORÁRIO: destroy ao invés de pack_forget
     
     def _carregar_view(self, view_name, view_class, module_path):
-        """Carrega view com cache para melhor performance"""
+        """Carrega view SEM cache (temporário para debug)"""
         self.limpar_main_frame()
         
-        # Se a view já existe no cache e é a mesma que queremos, apenas re-empacota
-        if view_name in self.view_cache:
-            print(f"[CACHE] Reutilizando {view_name} do cache (instantâneo)")
-            self.view_cache[view_name].pack(fill="both", expand=True)
-            self.current_view = view_name
-            # NÃO atualizar dados automaticamente - só quando necessário
-            # Isso evita re-renderização pesada toda vez
-        else:
-            print(f"[CACHE] Primeira carga de {view_name}")
-            # Carregar a view pela primeira vez
-            module = __import__(module_path, fromlist=[view_class])
-            view_cls = getattr(module, view_class)
-            view = view_cls(self.main_frame, self.database)
-            self.view_cache[view_name] = view
-            self.current_view = view_name
+        # DESABILITADO CACHE TEMPORARIAMENTE - causando erro no Linux
+        # Sempre criar nova view
+        print(f"[NO-CACHE] Carregando {view_name}...")
+        module = __import__(module_path, fromlist=[view_class])
+        view_cls = getattr(module, view_class)
+        view = view_cls(self.main_frame, self.database)
+        view.pack(fill="both", expand=True)
+        self.current_view = view_name
     
     def mostrar_dashboard(self):
         self._carregar_view('dashboard', 'DashboardView', 'views.dashboard_view')
@@ -129,54 +122,16 @@ class MainView:
         """Pré-carrega as views principais em background para melhor performance"""
         print("[CACHE] Pré-carregando views...")
         
-        # Já temos dashboard carregado no __init__, agora carregar as outras
-        def carregar_clientes():
-            if 'clientes' not in self.view_cache:
-                try:
-                    module = __import__('views.clientes_view', fromlist=['ClientesView'])
-                    view_cls = getattr(module, 'ClientesView')
-                    view = view_cls(self.main_frame, self.database)
-                    view.pack_forget()  # Esconder por enquanto
-                    self.view_cache['clientes'] = view
-                    print("[CACHE] ClientesView carregada")
-                except Exception as e:
-                    print(f"[CACHE] Erro ao carregar ClientesView: {e}")
-        
-        def carregar_emprestimos():
-            if 'emprestimos' not in self.view_cache:
-                try:
-                    module = __import__('views.emprestimos_view', fromlist=['EmprestimosView'])
-                    view_cls = getattr(module, 'EmprestimosView')
-                    view = view_cls(self.main_frame, self.database)
-                    view.pack_forget()  # Esconder por enquanto
-                    self.view_cache['emprestimos'] = view
-                    print("[CACHE] EmprestimosView carregada")
-                except Exception as e:
-                    print(f"[CACHE] Erro ao carregar EmprestimosView: {e}")
-        
-        def carregar_notificacoes():
-            if 'notificacoes' not in self.view_cache:
-                try:
-                    module = __import__('views.notificacoes_view', fromlist=['NotificacoesView'])
-                    view_cls = getattr(module, 'NotificacoesView')
-                    view = view_cls(self.main_frame, self.database)
-                    view.pack_forget()  # Esconder por enquanto
-                    self.view_cache['notificacoes'] = view
-                    print("[CACHE] NotificacoesView carregada")
-                except Exception as e:
-                    print(f"[CACHE] Erro ao carregar NotificacoesView: {e}")
-        
-        # Carregar com delays pequenos para não travar UI
-        self.root.after(100, carregar_clientes)
-        self.root.after(200, carregar_emprestimos)
-        self.root.after(300, carregar_notificacoes)
-        self.root.after(400, lambda: print("[CACHE] Todas as views pré-carregadas!"))
+    def pre_carregar_views(self):
+        """DESABILITADO: Pré-carregamento causa problemas no Linux"""
+        print("[NO-CACHE] Pré-carregamento desabilitado temporariamente")
+        return
     
     def mostrar_sobre(self):
         """Mostra guia de uso do sistema"""
+        from utils.window_utils import configurar_janela_modal
         janela = ctk.CTkToplevel(self.root)
-        janela.title("Guia de Uso - FinancePro")
-        janela.geometry("900x700")
+        configurar_janela_modal(janela, "Guia de Uso - FinancePro", 900, 700, self.root)
         janela.transient(self.root)
         
         # Frame scrollable

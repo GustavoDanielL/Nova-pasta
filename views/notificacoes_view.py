@@ -144,7 +144,7 @@ class NotificacoesView(ctk.CTkFrame):
                 for emp in self.database.get_overdue_emprestimos():
                     cliente = self.database.get_cliente_por_id(emp.cliente_id)
                     nome = cliente.nome if cliente else emp.cliente_id
-                    writer.writerow(["Atraso", f"ID {emp.id} - {nome}", emp.data_inicio])
+                    writer.writerow(["Atraso", f"ID {emp.id} - {nome}", emp.data_emprestimo])
 
             message = f"Exportado: {filename}"
             ctk.CTkLabel(self, text=message, font=("Arial", 10)).pack(padx=20, pady=(4,8))
