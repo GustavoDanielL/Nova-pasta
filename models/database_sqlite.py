@@ -484,13 +484,13 @@ class DatabaseSQLite:
             cursor.execute("""
                 INSERT INTO usuarios (username, password_hash)
                 VALUES (?, ?)
-            """, (usuario.username, usuario.password_hash))
+            """, (usuario.usuario, usuario.password_hash))
             
             conn.commit()
             conn.close()
             
             self._usuarios_cache.append(usuario)
-            logger.info(f"Usuário {usuario.username} adicionado")
+            logger.info(f"Usuário {usuario.usuario} adicionado")
     
     def salvar_dados(self):
         """Salva alterações no banco (já persistido automaticamente)"""
