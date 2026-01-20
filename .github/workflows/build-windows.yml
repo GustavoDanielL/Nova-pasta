@@ -31,7 +31,7 @@ jobs:
           $spec = Join-Path $Env:GITHUB_WORKSPACE 'financepro-backend.spec'
           if (-not (Test-Path $spec)) {
             Write-Host 'financepro-backend.spec not found. Creating a default one.'
-            @'
+            @"
 # -*- mode: python ; coding: utf-8 -*-
 
 
@@ -70,7 +70,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-            '@ | Set-Content -Path $spec -Encoding UTF8
+            "@ | Set-Content -Path $spec -Encoding UTF8
           }
 
       - name: Build backend executable
