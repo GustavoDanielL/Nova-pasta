@@ -26,12 +26,11 @@ jobs:
           pip install pyinstaller
 
       - name: Ensure backend spec exists
-        shell: pwsh
+        shell: bash
         run: |
-          $spec = Join-Path $Env:GITHUB_WORKSPACE 'financepro-backend.spec'
-          if (-not (Test-Path $spec)) {
-            Write-Host 'financepro-backend.spec not found. Creating a default one.'
-            @"
+          spec="$GITHUB_WORKSPACE/financepro-backend.spec"
+          if [ ! -f "$spec" ]; then
+            cat > "$spec" <<'EOF'
 # -*- mode: python ; coding: utf-8 -*-
 
 
@@ -70,8 +69,8 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-            "@ | Set-Content -Path $spec -Encoding UTF8
-          }
+EOF
+          fi
 
       - name: Build backend executable
         working-directory: ${{ github.workspace }}
