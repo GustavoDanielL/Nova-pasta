@@ -61,6 +61,10 @@
       {
         "from": "../requirements.txt",
         "to": "requirements.txt"
+      },
+      {
+        "from": "../dist/financepro-backend.exe",
+        "to": "backend/financepro-backend.exe"
       }
     ],
     "directories": {
