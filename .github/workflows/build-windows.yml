@@ -36,8 +36,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: |
-          npm cache clean --force
+          if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
           npm install
+        shell: pwsh
 
       - name: Build Windows installer (Electron)
         working-directory: frontend
