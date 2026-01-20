@@ -24,10 +24,10 @@ class LoginView(ctk.CTkFrame):
         # Login: admin
         # Senha: admin123
         # Criar usuário admin padrão se não existir (senha armazenada com hash PBKDF2)
-        if not self.database.usuarios:
-            admin = Usuario("admin", Usuario.hash_password("admin123"), "Administrador")
-            self.database.usuarios.append(admin)
-            self.database.salvar_dados()
+            if not self.database.usuarios:
+                admin = Usuario("admin", Usuario.hash_password("admin123"), "Administrador")
+                self.database.usuarios.append(admin)
+                self.database.salvar_dados()
     
     def mostrar_tela_ativacao(self):
         """Tela para cliente digitar a chave de licença"""
@@ -167,12 +167,13 @@ class LoginView(ctk.CTkFrame):
         for user in self.database.usuarios:
             if user.usuario == usuario:
                 # Use verify_password to detect legacy plain-text entries that need re-hash
-                ok, rehash = Usuario.verify_password(user.senha, senha)
+                    stored = getattr(user, 'password_hash', None) or getattr(user, 'senha', None)
+                    ok, rehash = Usuario.verify_password(stored, senha)
                 if ok:
                     # If password was plain-text, re-hash and persist
                     if rehash:
                         try:
-                            user.senha = Usuario.hash_password(senha)
+                                user.password_hash = Usuario.hash_password(senha)
                             self.database.salvar_dados()
                         except Exception:
                             pass

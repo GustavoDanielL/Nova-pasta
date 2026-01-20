@@ -240,15 +240,16 @@ class DatabaseSQLite:
                 cursor.execute("SELECT * FROM pagamentos WHERE emprestimo_id = ?", (row['id'],))
                 pagamentos = []
                 for p in cursor.fetchall():
+                    p_dict = dict(p)
                     pag = {
-                        'id': p['id'],
-                        'valor': p['valor'],
-                        'data': p['data'],
-                        'tipo': p.get('tipo', 'Parcela'),
-                        'saldo_anterior': p.get('saldo_anterior', 0)
+                        'id': p_dict.get('id'),
+                        'valor': p_dict.get('valor'),
+                        'data': p_dict.get('data'),
+                        'tipo': p_dict.get('tipo', 'Parcela'),
+                        'saldo_anterior': p_dict.get('saldo_anterior', 0)
                     }
-                    if p.get('metodo'):
-                        pag['metodo'] = p['metodo']
+                    if p_dict.get('metodo'):
+                        pag['metodo'] = p_dict.get('metodo')
                     pagamentos.append(pag)
                 
                 emprestimo = Emprestimo(
@@ -272,19 +273,22 @@ class DatabaseSQLite:
             cursor.execute("SELECT * FROM usuarios")
             self._usuarios_cache = []
             for row in cursor.fetchall():
-                usuario = Usuario(row['username'], "")
-                usuario.password_hash = row['password_hash']
+                # Criar Usuario com password_hash carregado
+                row_dict = dict(row)
+                usuario = Usuario(row_dict.get('username'), password_hash=row_dict.get('password_hash'), titulo="", id=row_dict.get('id'))
                 self._usuarios_cache.append(usuario)
             
             # Carregar lembretes
             cursor.execute("SELECT * FROM lembretes")
             self._lembretes_cache = []
             for row in cursor.fetchall():
+                # map table columns (titulo, descricao) to the expected structure
+                row_dict = dict(row)
                 lembrete = {
-                    "id": row['id'],
-                    "tipo": row['tipo'],
-                    "mensagem": row['mensagem'],
-                    "data": row['data']
+                    "id": row_dict.get('id'),
+                    "tipo": row_dict.get('titulo', ''),
+                    "mensagem": row_dict.get('descricao', ''),
+                    "data": row_dict.get('data')
                 }
                 self._lembretes_cache.append(lembrete)
             

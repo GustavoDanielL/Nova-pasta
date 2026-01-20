@@ -3,11 +3,11 @@ import os
 import hashlib
 
 class Usuario:
-    def __init__(self, usuario, senha, titulo, id=None):
+    def __init__(self, usuario, password_hash=None, titulo="", id=None):
         self.id = id or self.gerar_id()
         self.usuario = usuario
-        # senha may be a raw password or a stored hash string
-        self.senha = senha
+        # password_hash stores the PBKDF2 serialized string; keep None if not set
+        self.password_hash = password_hash
         self.titulo = titulo
         self.data_criacao = datetime.now().isoformat()
         self.ativo = True
@@ -46,14 +46,14 @@ class Usuario:
             return ok, ok
 
     def verificar_senha(self, senha):
-        ok, rehash = Usuario.verify_password(self.senha, senha)
+        ok, rehash = Usuario.verify_password(self.password_hash, senha)
         return ok
 
     def to_dict(self):
         return {
             'id': self.id,
             'usuario': self.usuario,
-            'senha': self.senha,
+            'password_hash': self.password_hash,
             'titulo': self.titulo,
             'data_criacao': self.data_criacao,
             'ativo': self.ativo
@@ -61,9 +61,11 @@ class Usuario:
 
     @classmethod
     def from_dict(cls, data):
+        # support legacy key 'senha' or new 'password_hash'
+        ph = data.get('password_hash') if data.get('password_hash') is not None else data.get('senha')
         usuario = cls(
             usuario=data['usuario'],
-            senha=data.get('senha'),
+            password_hash=ph,
             titulo=data.get('titulo', ''),
             id=data.get('id')
         )
