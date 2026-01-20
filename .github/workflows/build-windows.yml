@@ -26,7 +26,8 @@ jobs:
           pip install pyinstaller
 
       - name: Build backend executable
-        run: python -m PyInstaller -y financepro-backend.spec
+        working-directory: ${{ github.workspace }}
+        run: python -m PyInstaller -y ./financepro-backend.spec
 
       - name: Set up Node.js 18
         uses: actions/setup-node@v4
