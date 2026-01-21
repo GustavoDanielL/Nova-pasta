@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src http://127.0.0.1:8000 http://localhost:8000; img-src 'self' data:;">
+    <title>FinancePro - Sistema de Gestão Financeira</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v12"/>
+                        <path d="M15 9.5c0-1.5-1.5-2.5-3-2.5s-3 1-3 2.5c0 2 3 2.5 3 4.5 0 1.5-1.5 2.5-3 2.5s-3-1-3-2.5"/>
+                    </svg>
+                </div>
+                <h1>FinancePro</h1>
+            </div>
+            <div class="splash-loader">
+                <div class="loader-bar"></div>
+            </div>
+            <p class="splash-text">Carregando sistema...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen hidden">
+        <div class="login-container">
+            <div class="login-left">
+                <div class="login-branding">
+                    <div class="login-logo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v12"/>
+                            <path d="M15 9.5c0-1.5-1.5-2.5-3-2.5s-3 1-3 2.5c0 2 3 2.5 3 4.5 0 1.5-1.5 2.5-3 2.5s-3-1-3-2.5"/>
+                        </svg>
+                    </div>
+                    <h1>FinancePro</h1>
+                    <p>Sistema completo de gestão de empréstimos e finanças pessoais</p>
+                </div>
+                <div class="login-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9" rx="1"/>
+                                <rect x="14" y="3" width="7" height="5" rx="1"/>
+                                <rect x="14" y="12" width="7" height="9" rx="1"/>
+                                <rect x="3" y="16" width="7" height="5" rx="1"/>
+                            </svg>
+                        </span>
+                        <span>Dashboard inteligente</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </span>
+                        <span>Gestão de clientes</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </span>
+                        <span>Controle de empréstimos</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                        </span>
+                        <span>Notificações automáticas</span>
+                    </div>
+                </div>
+            </div>
+            <div class="login-right">
+                <div class="login-form-container">
+                    <h2>Bem-vindo de volta!</h2>
+                    <p class="login-subtitle">Entre com suas credenciais para acessar o sistema</p>
+                    
+                    <form id="login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Usuário</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                </span>
+                                <input type="text" id="username" name="username" placeholder="Digite seu usuário" required autocomplete="username">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Senha</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                </span>
+                                <input type="password" id="password" name="password" placeholder="Digite sua senha" required autocomplete="current-password">
+                                <button type="button" class="toggle-password" id="toggle-password-btn" aria-label="Mostrar senha">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" id="remember-me">
+                                <span class="checkmark"></span>
+                                <span>Lembrar de mim</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-login">
+                            <span>Entrar</span>
+                            <span class="btn-loader hidden"></span>
+                        </button>
+                        
+                        <div class="login-hint">
+                            <span class="hint-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                                    <path d="M9 18h6"/>
+                                    <path d="M10 22h4"/>
+                                </svg>
+                            </span>
+                            <span>Credenciais padrão: <strong>admin</strong> / <strong>admin123</strong></span>
+                        </div>
+                    </form>
+                    
+                    <div id="login-error" class="login-error hidden">
+                        <span class="error-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </span>
+                        <span class="error-message"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v12"/>
+                            <path d="M15 9.5c0-1.5-1.5-2.5-3-2.5s-3 1-3 2.5c0 2 3 2.5 3 4.5 0 1.5-1.5 2.5-3 2.5s-3-1-3-2.5"/>
+                        </svg>
+                    </span>
+                    <span class="logo-text">FinancePro</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toggle-icon">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active" data-view="dashboard">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="9" rx="1"/>
+                                    <rect x="14" y="3" width="7" height="5" rx="1"/>
+                                    <rect x="14" y="12" width="7" height="9" rx="1"/>
+                                    <rect x="3" y="16" width="7" height="5" rx="1"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="clients">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Clientes</span>
+                            <span class="nav-badge" id="clients-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="loans">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                    <line x1="1" y1="10" x2="23" y2="10"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Empréstimos</span>
+                            <span class="nav-badge" id="loans-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="payments">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Pagamentos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="reports">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Relatórios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="docs">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10 9 9 9 8 9"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Documentação</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="nav-divider"></div>
+                
+                <ul class="nav-list nav-secondary">
+                    <li class="nav-item" data-view="settings">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name" id="user-name">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+                <button class="btn-logout" id="btn-logout" title="Sair">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Expand Trigger (for collapsed state) -->
+        <div class="sidebar-expand-trigger" id="sidebar-expand-trigger"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                    <div class="breadcrumb" id="breadcrumb">
+                        <span>Home</span>
+                        <span class="separator">›</span>
+                        <span class="current">Dashboard</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-container">
+                        <span class="search-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="search-input" id="global-search" placeholder="Buscar clientes, empréstimos...">
+                        <button class="search-clear hidden" id="search-clear" aria-label="Limpar pesquisa">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="header-btn" id="btn-notifications" title="Notificações">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge hidden" id="notification-badge">0</span>
+                    </button>
+                    <button class="header-btn" id="btn-theme-toggle" title="Alternar tema">
+                        <span id="theme-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-moon">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area" id="content-area">
+                <!-- Dashboard View -->
+                <section id="view-dashboard" class="view active">
+                    <div class="dashboard-grid">
+                        <!-- Stats Cards -->
+                        <div class="stats-row">
+                            <div class="stat-card stat-primary">
+                                <div class="stat-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="1" x2="12" y2="23"/>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-total-emprestado">R$ 0,00</span>
+                                    <span class="stat-label">Total Emprestado</span>
+                                </div>
+                                <div class="stat-trend up">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                        <polyline points="17 6 23 6 23 12"/>
+                                    </svg>
+                                    <span>+12%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-success">
+                                <div class="stat-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-total-recebido">R$ 0,00</span>
+                                    <span class="stat-label">Total Recebido</span>
+                                </div>
+                                <div class="stat-trend up">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                        <polyline points="17 6 23 6 23 12"/>
+                                    </svg>
+                                    <span>+8%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-warning">
+                                <div class="stat-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-a-receber">R$ 0,00</span>
+                                    <span class="stat-label">A Receber</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-danger">
+                                <div class="stat-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-atrasados">0</span>
+                                    <span class="stat-label">Empréstimos Atrasados</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="charts-row">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                                            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                                        </svg>
+                                        Distribuição de Status
+                                    </h3>
+                                    <div class="card-actions">
+                                        <select class="chart-filter" id="chart-period">
+                                            <option value="all">Todo período</option>
+                                            <option value="month">Este mês</option>
+                                            <option value="year">Este ano</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="chart-container" id="status-chart">
+                                    <canvas id="canvas-status"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <line x1="18" y1="20" x2="18" y2="10"/>
+                                            <line x1="12" y1="20" x2="12" y2="4"/>
+                                            <line x1="6" y1="20" x2="6" y2="14"/>
+                                        </svg>
+                                        Evolução Mensal
+                                    </h3>
+                                </div>
+                                <div class="chart-container" id="evolution-chart">
+                                    <canvas id="canvas-evolution"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="activity-row">
+                            <div class="activity-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                        </svg>
+                                        Atividade Recente
+                                    </h3>
+                                    <a href="#" class="view-all" data-view="loans">Ver todos →</a>
+                                </div>
+                                <div class="activity-list" id="recent-activity">
+                                    <div class="activity-empty">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                                            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                        </svg>
+                                        <p>Nenhuma atividade recente</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alerts-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                        </svg>
+                                        Alertas
+                                    </h3>
+                                </div>
+                                <div class="alerts-list" id="alerts-list">
+                                    <div class="alert-empty">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                            <polyline points="22 4 12 14.01 9 11.01"/>
+                                        </svg>
+                                        <p>Nenhum alerta no momento</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clients View -->
+                <section id="view-clients" class="view">
+                    <div class="view-header">
+                        <div class="view-actions">
+                            <div class="search-filter">
+                                <span class="search-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                </span>
+                                <input type="text" class="filter-input" id="clients-search" placeholder="Buscar por nome, CPF, email...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all">Todos</button>
+                                <button class="filter-btn" data-filter="active">Ativos</button>
+                                <button class="filter-btn" data-filter="inactive">Inativos</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="btn-new-client">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            <span>Novo Cliente</span>
+                        </button>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table class="data-table" id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="nome">Nome <span class="sort-icon">↕</span></th>
+                                    <th class="sortable" data-sort="cpf">CPF/CNPJ <span class="sort-icon">↕</span></th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th class="sortable" data-sort="emprestimos">Empréstimos <span class="sort-icon">↕</span></th>
+                                    <th>Status</th>
+                                    <th class="actions-col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-tbody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                        <div class="table-empty hidden" id="clients-empty">
+                            <div class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                <h3>Nenhum cliente encontrado</h3>
+                                <p>Comece adicionando seu primeiro cliente</p>
+                                <button class="btn-primary" id="btn-add-first-client">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <line x1="12" y1="5" x2="12" y2="19"/>
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                    </svg>
+                                    <span>Adicionar Cliente</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-footer">
+                        <div class="table-info">
+                            Mostrando <span id="clients-showing">0</span> de <span id="clients-total">0</span> clientes
+                        </div>
+                        <div class="table-pagination">
+                            <!-- Pagination controls -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Loans View -->
+                <section id="view-loans" class="view">
+                    <div class="view-header">
+                        <div class="view-actions">
+                            <div class="search-filter">
+                                <span class="search-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                </span>
+                                <input type="text" class="filter-input" id="loans-search" placeholder="Buscar por cliente, ID...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all" onclick="filterLoans('all')">Todos</button>
+                                <button class="filter-btn" data-filter="active" onclick="filterLoans('active')">Ativos</button>
+                                <button class="filter-btn" data-filter="overdue" onclick="filterLoans('overdue')">Atrasados</button>
+                                <button class="filter-btn" data-filter="paid" onclick="filterLoans('paid')">Quitados</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="btn-new-loan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            <span>Novo Empréstimo</span>
+                        </button>
+                    </div>
+                    
+                    <div class="loans-grid" id="loans-grid">
+                        <!-- Dynamic loan cards -->
+                    </div>
+                    
+                    <div class="loans-empty hidden" id="loans-empty">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            <h3>Nenhum empréstimo encontrado</h3>
+                            <p>Crie seu primeiro empréstimo para começar</p>
+                            <button class="btn-primary" id="btn-add-first-loan">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                <span>Criar Empréstimo</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payments View -->
+                <section id="view-payments" class="view">
+                    <div class="payments-container">
+                        <div class="payment-form-card">
+                            <div class="card-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <line x1="12" y1="1" x2="12" y2="23"/>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                    </svg>
+                                    Registrar Pagamento
+                                </h3>
+                            </div>
+                            <form id="payment-form" class="payment-form">
+                                <div class="form-group">
+                                    <label for="payment-loan">Empréstimo *</label>
+                                    <select id="payment-loan" required>
+                                        <option value="">Selecione um empréstimo</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="payment-value">Valor *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-prefix">R$</span>
+                                            <input type="text" id="payment-value" required placeholder="0,00" style="padding-left: 2.5rem;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="payment-date">Data</label>
+                                        <input type="date" id="payment-date">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="payment-type">Tipo</label>
+                                    <select id="payment-type">
+                                        <option value="Parcela">Parcela</option>
+                                        <option value="Amortização">Amortização</option>
+                                        <option value="Quitação">Quitação</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-primary btn-block">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    <span>Confirmar Pagamento</span>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="recent-payments-card">
+                            <div class="card-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    Pagamentos Recentes
+                                </h3>
+                            </div>
+                            <div class="payments-list" id="payments-list">
+                                <div class="payments-empty">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                                        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/>
+                                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
+                                        <path d="M12 17.5v-11"/>
+                                    </svg>
+                                    <p>Nenhum pagamento registrado</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports View -->
+                <section id="view-reports" class="view">
+                    <div class="reports-grid">
+                        <div class="report-card" onclick="generateReport('general')">
+                            <div class="report-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <line x1="10" y1="9" x2="8" y2="9"/>
+                                </svg>
+                            </div>
+                            <h3>Relatório Geral</h3>
+                            <p>Visão completa de todos os empréstimos</p>
+                        </div>
+                        <div class="report-card" onclick="generateReport('overdue')">
+                            <div class="report-icon danger">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                            <h3>Empréstimos Atrasados</h3>
+                            <p>Lista de empréstimos em atraso</p>
+                        </div>
+                        <div class="report-card" onclick="generateReport('income')">
+                            <div class="report-icon success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                    <polyline points="17 6 23 6 23 12"/>
+                                </svg>
+                            </div>
+                            <h3>Receitas</h3>
+                            <p>Análise de receitas por período</p>
+                        </div>
+                        <div class="report-card" onclick="generateReport('clients')">
+                            <div class="report-icon primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                            </div>
+                            <h3>Relatório de Clientes</h3>
+                            <p>Análise detalhada por cliente</p>
+                        </div>
+                        <div class="report-card" onclick="generateReport('monthly')">
+                            <div class="report-icon warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                            <h3>Relatório Mensal</h3>
+                            <p>Comparativo mês a mês</p>
+                        </div>
+                        <div class="report-card" onclick="exportData()">
+                            <div class="report-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                            </div>
+                            <h3>Exportar Dados</h3>
+                            <p>Exportar para Excel ou PDF</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Documentation View -->
+                <section id="view-docs" class="view">
+                    <div class="docs-container">
+                        <div class="docs-header">
+                            <h2>📚 Documentação do Sistema</h2>
+                            <p>Guia completo de como utilizar o FinancePro</p>
+                        </div>
+
+                        <div class="docs-content">
+                            <div class="docs-section">
+                                <h3>🎯 Visão Geral</h3>
+                                <p>O FinancePro é um sistema completo de gestão de empréstimos que permite controlar clientes, empréstimos, pagamentos e gerar relatórios detalhados.</p>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>👥 Gerenciamento de Clientes</h3>
+                                <ol>
+                                    <li><strong>Adicionar Cliente:</strong> Clique no botão "+ Novo Cliente" e preencha os dados obrigatórios (nome, CPF/CNPJ, telefone e e-mail).</li>
+                                    <li><strong>Buscar Cliente:</strong> Use a barra de pesquisa para filtrar clientes por nome, CPF ou telefone.</li>
+                                    <li><strong>Visualizar Empréstimos:</strong> Clique no ícone "💰" na linha do cliente para ver todos os seus empréstimos.</li>
+                                </ol>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>💰 Empréstimos</h3>
+                                <ol>
+                                    <li><strong>Criar Empréstimo:</strong> Clique em "+ Novo Empréstimo", selecione o cliente, valor, taxa de juros e prazo.</li>
+                                    <li><strong>Acompanhamento:</strong> O sistema calcula automaticamente o valor das parcelas e exibe o status (Em dia, Atrasado, Quitado).</li>
+                                    <li><strong>Detalhes:</strong> Clique em um empréstimo para ver todas as parcelas e histórico de pagamentos.</li>
+                                </ol>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>💳 Pagamentos</h3>
+                                <ol>
+                                    <li><strong>Registrar Pagamento:</strong> Selecione o empréstimo e informe o valor recebido.</li>
+                                    <li><strong>Tipos de Pagamento:</strong>
+                                        <ul style="margin-top: 0.5rem;">
+                                            <li><strong>Parcela Completa:</strong> Valor da parcela mensal normal</li>
+                                            <li><strong>Parcial:</strong> Qualquer valor diferente da parcela</li>
+                                            <li><strong>Quitação:</strong> Pagamento total do saldo devedor</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Histórico:</strong> Todos os pagamentos ficam registrados com data e valor.</li>
+                                </ol>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>📊 Relatórios e Exportação</h3>
+                                <ol>
+                                    <li><strong>Relatório Geral:</strong> Visão completa de todos os empréstimos e estatísticas.</li>
+                                    <li><strong>Empréstimos Atrasados:</strong> Lista detalhada com dias de atraso e contato dos clientes.</li>
+                                    <li><strong>Exportar Dados:</strong> Exporte para CSV (Excel) ou JSON (backup completo).</li>
+                                    <li><strong>Backup Manual:</strong> Nas Configurações, faça backup de segurança dos dados.</li>
+                                </ol>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>🔔 Alertas e Notificações</h3>
+                                <p>O sistema exibe alertas automáticos para:</p>
+                                <ul>
+                                    <li>Empréstimos com parcelas vencidas</li>
+                                    <li>Parcelas próximas do vencimento (5 dias)</li>
+                                    <li>Status de pagamentos atrasados</li>
+                                </ul>
+                                <p>Clique no ícone de sino 🔔 no cabeçalho para ver todos os alertas ativos.</p>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>⚙️ Configurações</h3>
+                                <ol>
+                                    <li><strong>Tema:</strong> Alterne entre modo claro e escuro conforme sua preferência.</li>
+                                    <li><strong>Backup Manual:</strong> Exporte uma cópia de segurança de todos os dados.</li>
+                                    <li><strong>Segurança:</strong> Sempre faça logout ao terminar de usar o sistema.</li>
+                                </ol>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>💡 Dicas de Uso</h3>
+                                <ul>
+                                    <li>Use a pesquisa global (canto superior direito) para encontrar rapidamente clientes ou empréstimos.</li>
+                                    <li>Acompanhe o Dashboard diariamente para ver o status geral dos empréstimos.</li>
+                                    <li>Faça backups regulares dos seus dados (recomendado semanalmente).</li>
+                                    <li>Utilize os filtros na aba de Empréstimos para visualizar apenas ativos, atrasados ou quitados.</li>
+                                    <li>Pressione Ctrl+Shift+R para recarregar a interface caso necessário.</li>
+                                </ul>
+                            </div>
+
+                            <div class="docs-section">
+                                <h3>❓ Suporte</h3>
+                                <p>Em caso de dúvidas ou problemas, verifique:</p>
+                                <ul>
+                                    <li>Se o backend está rodando corretamente (porta 8000)</li>
+                                    <li>Os logs do sistema no console (F12)</li>
+                                    <li>Se todos os campos obrigatórios foram preenchidos corretamente</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings View -->
+                <section id="view-settings" class="view">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <circle cx="12" cy="12" r="5"/>
+                                        <line x1="12" y1="1" x2="12" y2="3"/>
+                                        <line x1="12" y1="21" x2="12" y2="23"/>
+                                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                        <line x1="1" y1="12" x2="3" y2="12"/>
+                                        <line x1="21" y1="12" x2="23" y2="12"/>
+                                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                                    </svg>
+                                    Aparência
+                                </h3>
+                            </div>
+                            <div class="settings-options">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h4>Tema</h4>
+                                        <p>Escolha entre tema claro ou escuro</p>
+                                    </div>
+                                    <div class="theme-toggle-buttons">
+                                        <button class="theme-btn" data-theme="light">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                                <circle cx="12" cy="12" r="5"/>
+                                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                            </svg>
+                                            Claro
+                                        </button>
+                                        <button class="theme-btn" data-theme="dark">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                            </svg>
+                                            Escuro
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        <path d="m9 12 2 2 4-4"/>
+                                    </svg>
+                                    Backup e Dados
+                                </h3>
+                            </div>
+                            <div class="settings-options">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h4>Backup Manual</h4>
+                                        <p>Criar backup dos dados agora</p>
+                                    </div>
+                                    <button class="btn-secondary" onclick="createBackup()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="7 10 12 15 17 10"/>
+                                            <line x1="12" y1="15" x2="12" y2="3"/>
+                                        </svg>
+                                        Criar Backup
+                                    </button>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h4>Restaurar Backup</h4>
+                                        <p>Restaurar dados de um backup anterior</p>
+                                    </div>
+                                    <button class="btn-secondary" onclick="restoreBackup()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <polyline points="1 4 1 10 7 10"/>
+                                            <polyline points="23 20 23 14 17 14"/>
+                                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                                        </svg>
+                                        Restaurar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h3>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="16" x2="12" y2="12"/>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                    </svg>
+                                    Sobre
+                                </h3>
+                            </div>
+                            <div class="about-info">
+                                <p><strong>FinancePro</strong> v2.0.0</p>
+                                <p>Sistema de Gestão de Empréstimos</p>
+                                <p class="copyright">© 2024-2026 FinancePro. Todos os direitos reservados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modal-container" class="modal-container hidden">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Modal</h2>
+                <button class="modal-close" id="modal-close" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic modal content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Processando...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="icons.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

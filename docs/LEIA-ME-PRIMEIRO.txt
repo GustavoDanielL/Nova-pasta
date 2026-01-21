@@ -1,0 +1,101 @@
+# 🚀 GERAR EXECUTÁVEL - GUIA RÁPIDO
+
+## ⚡ Em 3 Passos:
+
+### 1️⃣ Abra a Pasta do Projeto
+Navegue até a pasta onde está o `FinancePro`
+
+### 2️⃣ Clique Duplo em `GERAR_INSTALADOR.bat`
+(Ou execute `build.py` via Python/PowerShell)
+
+### 3️⃣ Aguarde Completar
+- Primeira vez: 2-5 minutos (instala PyInstaller)
+- Próximas vezes: 1-2 minutos
+
+---
+
+## 📦 Arquivos Gerados
+
+Tudo vai para a pasta **`releases/`**:
+
+✅ **FinancePro_v1.0.0_Portable.zip** ← Envie isto ao cliente!
+- Compacto (~60 MB)
+- Contém tudo
+- Pronto para usar
+
+✅ **FinancePro.exe**
+- Executável direto
+- Sem instalação
+
+✅ **FinancePro_Setup.exe** (opcional)
+- Instalador com assistente
+- Cria atalhos
+
+---
+
+## 💾 Para Distribuir
+
+### Opção A: Envie o ZIP
+```
+1. Pegue o arquivo: FinancePro_v1.0.0_Portable.zip
+2. Envie ao cliente
+3. Cliente extrai a pasta
+4. Cliente clica em EXECUTE_AQUI.bat
+5. FinancePro abre! ✨
+```
+
+### Opção B: Envie o EXE
+```
+1. Pegue: FinancePro.exe
+2. Envie ao cliente
+3. Cliente clica 2x
+4. Abre instantaneamente ✨
+```
+
+---
+
+## 🎁 Instruções para o Cliente
+
+Envie este texto junto:
+
+```
+====================================
+FinancePro - Instruções de Instalação
+====================================
+
+1. Extraia a pasta FinancePro
+2. Clique em EXECUTE_AQUI.bat (ou FinancePro.exe)
+3. Aguarde a primeira execução
+4. Pronto! FinancePro está aberto
+
+Requisitos Mínimos:
+- Windows 7 ou superior
+- 100 MB de espaço livre
+- Conexão com internet (para SMTP - opcional)
+
+Dúvidas?
+Consulte o README.md dentro da pasta
+```
+
+---
+
+## 🔄 Atualizar Versão
+
+Quando houver atualizações:
+
+1. Edite em `build.py`:
+   ```python
+   self.version = "1.0.1"  # Mude a versão
+   ```
+
+2. Execute `GERAR_INSTALADOR.bat` novamente
+
+3. Novos arquivos aparecem em `releases/`
+
+---
+
+## ✨ Pronto!
+
+Seu programa agora pode ser distribuído como executável!
+
+**Próximas vezes será mais rápido** ⚡

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src http://127.0.0.1:8000 http://localhost:8000; img-src 'self' data:;">
+    <title>FinancePro - Sistema de Gestão Financeira</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <div class="logo-icon">💰</div>
+                <h1>FinancePro</h1>
+            </div>
+            <div class="splash-loader">
+                <div class="loader-bar"></div>
+            </div>
+            <p class="splash-text">Carregando sistema...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen hidden">
+        <div class="login-container">
+            <div class="login-left">
+                <div class="login-branding">
+                    <div class="login-logo">💰</div>
+                    <h1>FinancePro</h1>
+                    <p>Sistema completo de gestão de empréstimos e finanças pessoais</p>
+                </div>
+                <div class="login-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <span>Dashboard inteligente</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">👥</span>
+                        <span>Gestão de clientes</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💳</span>
+                        <span>Controle de empréstimos</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔔</span>
+                        <span>Notificações automáticas</span>
+                    </div>
+                </div>
+            </div>
+            <div class="login-right">
+                <div class="login-form-container">
+                    <h2>Bem-vindo de volta!</h2>
+                    <p class="login-subtitle">Entre com suas credenciais para acessar o sistema</p>
+                    
+                    <form id="login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="username">Usuário</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="username" name="username" placeholder="Digite seu usuário" required autocomplete="username">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Senha</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="password" name="password" placeholder="Digite sua senha" required autocomplete="current-password">
+                                <button type="button" class="toggle-password" aria-label="Mostrar senha">👁️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" id="remember-me">
+                                <span class="checkmark"></span>
+                                <span>Lembrar de mim</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-login">
+                            <span>Entrar</span>
+                            <span class="btn-loader hidden"></span>
+                        </button>
+                        
+                        <div class="login-hint">
+                            <span class="hint-icon">💡</span>
+                            <span>Credenciais padrão: <strong>admin</strong> / <strong>admin123</strong></span>
+                        </div>
+                    </form>
+                    
+                    <div id="login-error" class="login-error hidden">
+                        <span class="error-icon">⚠️</span>
+                        <span class="error-message"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">💰</span>
+                    <span class="logo-text">FinancePro</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <span></span>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active" data-view="dashboard">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="clients">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">👥</span>
+                            <span class="nav-text">Clientes</span>
+                            <span class="nav-badge" id="clients-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="loans">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">💳</span>
+                            <span class="nav-text">Empréstimos</span>
+                            <span class="nav-badge" id="loans-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="payments">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">💵</span>
+                            <span class="nav-text">Pagamentos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-view="reports">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📈</span>
+                            <span class="nav-text">Relatórios</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="nav-divider"></div>
+                
+                <ul class="nav-list nav-secondary">
+                    <li class="nav-item" data-view="settings">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <span class="user-name" id="user-name">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+                <button class="btn-logout" id="btn-logout" title="Sair">
+                    <span>🚪</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                    <div class="breadcrumb" id="breadcrumb">
+                        <span>Home</span>
+                        <span class="separator">›</span>
+                        <span class="current">Dashboard</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" id="global-search" placeholder="Buscar clientes, empréstimos...">
+                    </div>
+                    <button class="header-btn" id="btn-notifications" title="Notificações">
+                        <span>🔔</span>
+                        <span class="notification-badge hidden" id="notification-badge">0</span>
+                    </button>
+                    <button class="header-btn" id="btn-theme-toggle" title="Alternar tema">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area" id="content-area">
+                <!-- Dashboard View -->
+                <section id="view-dashboard" class="view active">
+                    <div class="dashboard-grid">
+                        <!-- Stats Cards -->
+                        <div class="stats-row">
+                            <div class="stat-card stat-primary">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-total-emprestado">R$ 0,00</span>
+                                    <span class="stat-label">Total Emprestado</span>
+                                </div>
+                                <div class="stat-trend up">
+                                    <span>↗</span>
+                                    <span>+12%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-success">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-total-recebido">R$ 0,00</span>
+                                    <span class="stat-label">Total Recebido</span>
+                                </div>
+                                <div class="stat-trend up">
+                                    <span>↗</span>
+                                    <span>+8%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-warning">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-a-receber">R$ 0,00</span>
+                                    <span class="stat-label">A Receber</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-danger">
+                                <div class="stat-icon">⚠️</div>
+                                <div class="stat-content">
+                                    <span class="stat-value" id="stat-atrasados">0</span>
+                                    <span class="stat-label">Empréstimos Atrasados</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="charts-row">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>📊 Distribuição de Status</h3>
+                                    <div class="card-actions">
+                                        <select class="chart-filter" id="chart-period">
+                                            <option value="all">Todo período</option>
+                                            <option value="month">Este mês</option>
+                                            <option value="year">Este ano</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="chart-container" id="status-chart">
+                                    <canvas id="canvas-status"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>📈 Evolução Mensal</h3>
+                                </div>
+                                <div class="chart-container" id="evolution-chart">
+                                    <canvas id="canvas-evolution"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="activity-row">
+                            <div class="activity-card">
+                                <div class="card-header">
+                                    <h3>🕐 Atividade Recente</h3>
+                                    <a href="#" class="view-all" data-view="loans">Ver todos →</a>
+                                </div>
+                                <div class="activity-list" id="recent-activity">
+                                    <div class="activity-empty">
+                                        <span>📭</span>
+                                        <p>Nenhuma atividade recente</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alerts-card">
+                                <div class="card-header">
+                                    <h3>🔔 Alertas</h3>
+                                </div>
+                                <div class="alerts-list" id="alerts-list">
+                                    <div class="alert-empty">
+                                        <span>✅</span>
+                                        <p>Nenhum alerta no momento</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Clients View -->
+                <section id="view-clients" class="view">
+                    <div class="view-header">
+                        <div class="view-actions">
+                            <div class="search-filter">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" class="filter-input" id="clients-search" placeholder="Buscar por nome, CPF, email...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all">Todos</button>
+                                <button class="filter-btn" data-filter="active">Ativos</button>
+                                <button class="filter-btn" data-filter="inactive">Inativos</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="btn-new-client">
+                            <span>➕</span>
+                            <span>Novo Cliente</span>
+                        </button>
+                    </div>
+                    
+                    <div class="data-table-container">
+                        <table class="data-table" id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="nome">Nome <span class="sort-icon">↕</span></th>
+                                    <th class="sortable" data-sort="cpf">CPF/CNPJ <span class="sort-icon">↕</span></th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th class="sortable" data-sort="emprestimos">Empréstimos <span class="sort-icon">↕</span></th>
+                                    <th>Status</th>
+                                    <th class="actions-col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-tbody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                        <div class="table-empty hidden" id="clients-empty">
+                            <div class="empty-state">
+                                <span class="empty-icon">👥</span>
+                                <h3>Nenhum cliente encontrado</h3>
+                                <p>Comece adicionando seu primeiro cliente</p>
+                                <button class="btn-primary" id="btn-add-first-client">
+                                    <span>➕</span>
+                                    <span>Adicionar Cliente</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-footer">
+                        <div class="table-info">
+                            Mostrando <span id="clients-showing">0</span> de <span id="clients-total">0</span> clientes
+                        </div>
+                        <div class="pagination" id="clients-pagination">
+                            <!-- Pagination buttons -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Loans View -->
+                <section id="view-loans" class="view">
+                    <div class="view-header">
+                        <div class="view-actions">
+                            <div class="search-filter">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" class="filter-input" id="loans-search" placeholder="Buscar por cliente, valor...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all">Todos</button>
+                                <button class="filter-btn" data-filter="active">Em dia</button>
+                                <button class="filter-btn" data-filter="overdue">Atrasados</button>
+                                <button class="filter-btn" data-filter="paid">Quitados</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="btn-new-loan">
+                            <span>➕</span>
+                            <span>Novo Empréstimo</span>
+                        </button>
+                    </div>
+                    
+                    <div class="loans-grid" id="loans-grid">
+                        <!-- Dynamic loan cards -->
+                    </div>
+                    
+                    <div class="loans-empty hidden" id="loans-empty">
+                        <div class="empty-state">
+                            <span class="empty-icon">💳</span>
+                            <h3>Nenhum empréstimo encontrado</h3>
+                            <p>Comece criando um novo empréstimo</p>
+                            <button class="btn-primary" id="btn-add-first-loan">
+                                <span>➕</span>
+                                <span>Criar Empréstimo</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payments View -->
+                <section id="view-payments" class="view">
+                    <div class="view-header">
+                        <h2>💵 Registro de Pagamentos</h2>
+                    </div>
+                    <div class="payments-content">
+                        <div class="payment-form-card">
+                            <h3>Registrar Pagamento</h3>
+                            <form id="payment-form" class="payment-form">
+                                <div class="form-group">
+                                    <label for="payment-loan">Empréstimo</label>
+                                    <select id="payment-loan" required>
+                                        <option value="">Selecione um empréstimo</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="payment-value">Valor</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-prefix">R$</span>
+                                            <input type="text" id="payment-value" placeholder="0,00" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="payment-date">Data</label>
+                                        <input type="date" id="payment-date" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="payment-type">Tipo</label>
+                                    <select id="payment-type">
+                                        <option value="Parcela">Parcela</option>
+                                        <option value="Adiantamento">Adiantamento</option>
+                                        <option value="Quitação">Quitação</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-primary btn-full">
+                                    <span>💵</span>
+                                    <span>Registrar Pagamento</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="payments-history-card">
+                            <h3>Histórico de Pagamentos</h3>
+                            <div class="payments-list" id="payments-list">
+                                <div class="payments-empty">
+                                    <span>📭</span>
+                                    <p>Nenhum pagamento registrado</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports View -->
+                <section id="view-reports" class="view">
+                    <div class="view-header">
+                        <h2>📈 Relatórios</h2>
+                    </div>
+                    <div class="reports-grid">
+                        <div class="report-card" data-report="summary">
+                            <div class="report-icon">📊</div>
+                            <h3>Resumo Geral</h3>
+                            <p>Visão geral de todos os dados</p>
+                            <button class="btn-secondary">Gerar Relatório</button>
+                        </div>
+                        <div class="report-card" data-report="clients">
+                            <div class="report-icon">👥</div>
+                            <h3>Relatório de Clientes</h3>
+                            <p>Detalhes de todos os clientes</p>
+                            <button class="btn-secondary">Gerar Relatório</button>
+                        </div>
+                        <div class="report-card" data-report="loans">
+                            <div class="report-icon">💳</div>
+                            <h3>Relatório de Empréstimos</h3>
+                            <p>Análise completa de empréstimos</p>
+                            <button class="btn-secondary">Gerar Relatório</button>
+                        </div>
+                        <div class="report-card" data-report="overdue">
+                            <div class="report-icon">⚠️</div>
+                            <h3>Empréstimos Atrasados</h3>
+                            <p>Lista de inadimplentes</p>
+                            <button class="btn-secondary">Gerar Relatório</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings View -->
+                <section id="view-settings" class="view">
+                    <div class="view-header">
+                        <h2>⚙️ Configurações</h2>
+                    </div>
+                    <div class="settings-content">
+                        <div class="settings-section">
+                            <h3>🎨 Aparência</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Tema</span>
+                                    <span class="setting-desc">Escolha entre tema claro ou escuro</span>
+                                </div>
+                                <div class="theme-toggle-switch">
+                                    <button class="theme-btn active" data-theme="light">☀️ Claro</button>
+                                    <button class="theme-btn" data-theme="dark">🌙 Escuro</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>🔔 Notificações</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Alertas de vencimento</span>
+                                    <span class="setting-desc">Receba alertas sobre empréstimos próximos do vencimento</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked id="setting-alerts">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>💾 Dados</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Backup automático</span>
+                                    <span class="setting-desc">Fazer backup diário dos dados</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked id="setting-backup">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-actions">
+                                <button class="btn-secondary" id="btn-export-data">
+                                    <span>📤</span>
+                                    <span>Exportar Dados</span>
+                                </button>
+                                <button class="btn-secondary" id="btn-import-data">
+                                    <span>📥</span>
+                                    <span>Importar Dados</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>ℹ️ Sobre</h3>
+                            <div class="about-info">
+                                <p><strong>FinancePro</strong> v2.0.0</p>
+                                <p>Sistema de Gestão de Empréstimos</p>
+                                <p class="copyright">© 2024-2026 FinancePro. Todos os direitos reservados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modal-container" class="modal-container hidden">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Modal</h2>
+                <button class="modal-close" id="modal-close" aria-label="Fechar">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic modal content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Processando...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
